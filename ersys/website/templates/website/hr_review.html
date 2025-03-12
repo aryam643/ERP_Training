@@ -1,0 +1,24 @@
+{% extends 'website/sidebar.html' %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
+    <h2 class="text-xl font-semibold mb-4">HR Resignation Approvals</h2>
+
+    {% for request in requests %}
+    <div class="p-4 border rounded-lg mb-4">
+        <p><strong>Employee:</strong> {{ request.user.first_name }} {{ request.user.last_name }}</p>
+        <p><strong>Reason:</strong> {{ request.reason }}</p>
+        <p><strong>Status:</strong> {{ request.status }}</p>
+
+        {% if request.status == "Manager Approved" %}
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="request_id" value="{{ request.id }}">
+            <button type="submit" name="approve" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">Approve</button>
+            <button type="submit" name="reject" class="ml-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Reject</button>
+        </form>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

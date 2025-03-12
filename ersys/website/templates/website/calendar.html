@@ -1,0 +1,40 @@
+{% extends "website/sidebar.html" %}
+
+{% block title %}
+<title>Project Calendar</title>
+{% endblock %}
+
+{% block content %}
+
+<!-- Include FullCalendar -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+<script> document.addEventListener("DOMContentLoaded", function () {
+    var calendarEl = document.getElementById("calendar");
+
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: "dayGridMonth",
+        headerToolbar: {
+            left: "prev,next today",
+            center: "title",
+            right: "dayGridMonth,timeGridWeek,timeGridDay"
+        },
+        events: "/calendar/events",  // Fetch events dynamically from Django
+        eventClick: function(info) {
+            alert("Project: " + info.event.title + "\nDescription: " + (info.event.extendedProps.description || "No description"));
+        }
+    });
+
+    calendar.render();
+});
+</script>
+<div class="flex flex-col justify-center items-center min-h-screen bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-700 p-6">
+    <!-- Heading -->
+    <h1 class="text-2xl font-bold mb-4 bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-700 text-white text-center w-full max-w-2xl p-4 rounded-xl shadow-lg">
+        Project Timeline
+    </h1>
+    <div id="calendar" class="bg-gray-200 p-8 rounded-xl shadow-xl w-full max-w-2xl">
+        
+        </div>
+    </div>
+</div>
+{% endblock %}

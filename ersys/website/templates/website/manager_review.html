@@ -1,0 +1,39 @@
+{% extends 'website/sidebar.html' %}
+{% block title %}
+<title>Manager Pending Reviews</title>
+{% endblock %}
+{% block content %}
+<div class="container mx-auto mt-12">
+    <h2 class="text-3xl font-semibold text-gray-800 text-center mb-4">Projects</h2>
+    <div class="overflow-x-auto">
+    
+        <table class="w-full border-collapse bg-white shadow-lg rounded-lg">
+            <thead>
+                <tr class="bg-red-700 text-white">
+                    <th class="px-6 py-3 text-left text-sm font-semibold">S.No.</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold">Employee Name</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold">Reason</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold">Status</th>
+
+
+                </tr>
+                </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for request in requests %}
+                <tr class="hover:bg-gray-100 transition-all">
+                    <td class="px-6 py-4">{{ forloop.counter }}</td>
+                    <td class="px-6 py-4">{{ request.employee.first_name }} {{ request.employee.last_name }}</td>
+                    <td class="px-6 py-4">{{ request.reason }}</td>
+                    <td class="px-6 py-4">{{ request.status }}</td>
+                    {% if request.status == "Pending" %}
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="request_id" value="{{ request.id }}">
+                        <button type="submit" name="approve" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">Approve</button>
+                        <button type="submit" name="reject" class="ml-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Reject</button>
+                    </form>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

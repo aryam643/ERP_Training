@@ -1,0 +1,139 @@
+{% extends "website/sidebar.html" %}
+
+{% block title %}
+<title>Manage User Roles</title>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-700 py-10 px-4">
+    <div class="max-w-5xl mx-auto">
+        <!-- Header Section -->
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold text-white">Manage User Roles</h2>
+            <p class="text-neutral-400 mt-2">Assign and update roles for employees in your organization</p>
+        </div>
+
+        <!-- Card Container -->
+        <div class="bg-neutral-800 rounded-xl shadow-xl border border-neutral-700 overflow-hidden">
+            <!-- Search and Filter Section -->
+            <div class="p-6 border-b border-neutral-700 flex flex-col md:flex-row gap-4 justify-between items-center">
+                <div class="relative w-full md:w-64">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-neutral-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <input type="text" id="search-users" placeholder="Search users..." class="bg-neutral-700 text-white w-full pl-10 pr-4 py-2 rounded-lg border border-neutral-600 focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <label for="filter-role" class="text-neutral-300">Filter by:</label>
+                    <select id="filter-role" class="bg-neutral-700 text-white px-3 py-2 rounded-lg border border-neutral-600 focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                        <option value="all">All Roles</option>
+                        <option value="Employee">Employee</option>
+                        <option value="Manager">Manager</option>
+                        <option value="HR">HR</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Table Section -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-neutral-700">
+                    <thead class="bg-neutral-900">
+                        <tr>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Name</th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Current Role</th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">New Role</th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-neutral-800 divide-y divide-neutral-700">
+                        {% for user in users %}
+                        <tr class="hover:bg-neutral-750 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10 bg-neutral-700 rounded-full flex items-center justify-center">
+                                        <span class="text-neutral-300 font-medium">{{ user.first_name|slice:":1" }}{{ user.last_name|slice:":1" }}</span>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-white">{{ user.first_name }} {{ user.last_name }}</div>
+                                        <div class="text-sm text-neutral-400">{{ user.email }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                    {% if user.role == 'Admin' %}bg-red-900 text-red-100
+                                    {% elif user.role == 'HR' %}bg-blue-900 text-blue-100
+                                    {% elif user.role == 'Manager' %}bg-green-900 text-green-100
+                                    {% else %}bg-neutral-600 text-neutral-100{% endif %}">
+                                    {{ user.role }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <form method="POST" action="{% url 'update_user_role' %}" class="flex items-center space-x-2">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                                    <select name="role" class="bg-neutral-700 text-white px-3 py-1 rounded border border-neutral-600 focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                                        <option value="Employee" {% if user.role == "Employee" %}selected{% endif %}>Employee</option>
+                                        <option value="Manager" {% if user.role == "Manager" %}selected{% endif %}>Manager</option>
+                                        <option value="HR" {% if user.role == "HR" %}selected{% endif %}>HR</option>
+                                        <option value="Admin" {% if user.role == "Admin" %}selected{% endif %}>Admin</option>
+                                    </select>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50">
+                                        Update
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="px-6 py-10 text-center text-neutral-400">
+                                No users found. Add users to your organization to manage their roles.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="bg-neutral-900 px-6 py-4 border-t border-neutral-700 flex items-center justify-between">
+                <div class="flex-1 flex justify-between items-center">
+                    <p class="text-sm text-neutral-400">
+                        Showing <span class="font-medium">{{ users|length }}</span> users
+                    </p>
+                    
+                    <div class="flex items-center space-x-2">
+                        <button class="bg-neutral-800 text-white px-3 py-1 rounded-lg border border-neutral-700 hover:bg-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                            Previous
+                        </button>
+                        <span class="text-neutral-400 text-sm">Page 1</span>
+                        <button class="bg-neutral-800 text-white px-3 py-1 rounded-lg border border-neutral-700 hover:bg-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                            Next
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Notification Area -->
+        {% if messages %}
+        <div class="mt-6">
+            {% for message in messages %}
+            <div class="bg-red-900/50 border border-red-700 text-red-100 px-4 py-3 rounded-lg flex items-start">
+                <svg class="h-6 w-6 text-red-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="font-medium">{{ message }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

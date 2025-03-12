@@ -1,0 +1,39 @@
+{% extends "website/sidebar.html" %}
+
+{% block title %}
+<title>Update Account</title>
+{% endblock %}
+
+{% block content %}
+<div class="flex justify-center items-center min-h-screen bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-700 p-6">
+    <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-lg">
+        <h2 class="text-4xl font-extrabold text-center text-gray-800 mb-6">Update Account</h2>
+        
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="space-y-4">
+                {% for field in form %}
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ field.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <button type="submit" 
+                class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-xl shadow-lg transition duration-200 transform hover:scale-105">
+                Save Changes
+            </button>
+        </form>
+        
+        <a href="/account" 
+            class="block text-center text-gray-500 mt-4 hover:underline transition duration-200 hover:text-gray-300">
+            Cancel
+        </a>
+    </div>
+</div>
+{% endblock %}

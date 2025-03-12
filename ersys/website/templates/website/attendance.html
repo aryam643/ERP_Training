@@ -1,0 +1,52 @@
+{% extends "website/sidebar.html" %}
+
+{% block title %}
+<title>Employee Attendance</title>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+    <h2 class="text-3xl font-bold text-gray-800 mb-6">Employee Attendance</h2>
+
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+            <thead class="bg-gray-800 text-white">
+                <tr>
+                    <th class="px-6 py-3 text-left text-sm font-semibold">Employee</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold">First Login</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold">Last Logout</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold">Total Active Time</th>
+                </tr>
+                
+            </thead>
+            <tbody class="text-gray-700">
+                {% for record in attendance_records %}
+                <tr class="border-b">
+                    <td class="px-6 py-4">{{ record.user.first_name }} {{ record.user.last_name }}</td>
+                    <td class="px-6 py-4">{{ record.login_time|date:"Y-m-d H:i:s" }}</td>
+                    <td class="px-6 py-4">
+                        {% if record.logout_time %}
+                            {{ record.logout_time|date:"Y-m-d H:i:s" }}
+                        {% else %}
+                            <span class="text-red-600 font-semibold">Currently Logged In</span>
+                            
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if record.duration %}
+                            {{ record.duration }}
+                        {% else %}
+                            <span class="text-blue-500 font-semibold">Session Active</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center py-4 text-gray-500">No attendance records found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

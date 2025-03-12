@@ -1,0 +1,47 @@
+{% extends "website/sidebar.html" %}
+
+{% block title %}
+<title>Account</title>
+{% endblock %}
+
+{% block content %}
+<div class="flex justify-center items-center min-h-screen bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-700">
+    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-lg">
+        <h2 class="text-4xl font-bold text-center text-gray-900 mb-6">My Account</h2>
+
+        <div class="space-y-4 text-gray-700 text-lg">
+            <div class="p-4 border rounded-lg bg-gray-100 shadow-sm">
+                <span class="font-semibold">Name:</span> 
+                {% if request.user.is_authenticated %}
+                    {{ request.user.first_name }} {{ request.user.last_name }}
+                {% else %}
+                    Guest
+                {% endif %}
+            </div>
+
+            <div class="p-4 border rounded-lg bg-gray-100 shadow-sm">
+                <span class="font-semibold">Email:</span> {{ request.user.email }}
+            </div>
+
+            <div class="p-4 border rounded-lg bg-gray-100 shadow-sm">
+                <span class="font-semibold">Date Creation : </span> {{ request.user.created_at }}
+            </div>
+
+            <div class="p-4 border rounded-lg bg-gray-100 shadow-sm">
+                <span class="font-semibold">Username:</span> {{ request.user.username }}
+            </div>
+
+            <div class="p-4 border rounded-lg bg-gray-100 shadow-sm">
+                <span class="font-semibold">Role:</span> {{ request.user.role }}
+            </div>
+        </div>
+
+        <div class="mt-6 flex justify-center">
+            <a href="update"
+               class="px-6 py-3 text-white font-semibold bg-red-600 hover:bg-red-700 rounded-lg transition duration-200 shadow-md">
+                Account Settings
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

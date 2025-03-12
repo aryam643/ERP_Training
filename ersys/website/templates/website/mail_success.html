@@ -1,0 +1,12 @@
+{% extends "website/sidebar.html" %}
+
+{% block title %}
+<title>Email Sent</title>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-6 text-center">
+    <h2 class="text-3xl font-bold text-green-600 mb-6">{{ message }}</h2>
+    <a href="{% url 'send_mail' %}" class="text-blue-500 hover:underline">Send another email</a>
+</div>
+{% endblock %}

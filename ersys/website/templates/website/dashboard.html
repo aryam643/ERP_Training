@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERP Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-700 min-h-screen flex font-sans">
+
+    <!-- Sidebar -->
+    <div class="w-72 bg-neutral-900 text-white flex flex-col shadow-xl">
+        <!-- Logo and Brand -->
+        <div class="p-6 border-b border-neutral-700">
+            <h1 class="text-3xl font-bold flex items-center">
+                <i class="fas fa-chart-line mr-3 text-red-500"></i>
+                ERP Dashboard
+            </h1>
+        </div>
+        
+        <!-- Navigation Menu -->
+        <div class="p-6 flex-grow">
+            <nav class="space-y-1">
+                <a href="{% url 'attendance' %}" class="group flex items-center px-4 py-3 text-lg rounded-lg hover:bg-neutral-800 transition-all duration-200">
+                    <i class="fas fa-calendar-check mr-3 text-neutral-400 group-hover:text-red-500"></i>
+                    <span class="group-hover:text-red-500">Attendance</span>
+                </a>
+                
+                <a href="{% url 'account' %}" class="group flex items-center px-4 py-3 text-lg rounded-lg hover:bg-neutral-800 transition-all duration-200">
+                    <i class="fas fa-user-circle mr-3 text-neutral-400 group-hover:text-red-500"></i>
+                    <span class="group-hover:text-red-500">Account</span>
+                </a>
+                
+                <a href="{% url 'project_list' %}" class="group flex items-center px-4 py-3 text-lg rounded-lg hover:bg-neutral-800 transition-all duration-200">
+                    <i class="fas fa-project-diagram mr-3 text-neutral-400 group-hover:text-red-500"></i>
+                    <span class="group-hover:text-red-500">Projects</span>
+                </a>
+                
+                <a href="{% url 'calendar' %}" class="group flex items-center px-4 py-3 text-lg rounded-lg hover:bg-neutral-800 transition-all duration-200">
+                    <i class="fas fa-calendar-alt mr-3 text-neutral-400 group-hover:text-red-500"></i>
+                    <span class="group-hover:text-red-500">Calendar</span>
+                </a>
+                
+                <a href="{% url 'send_mail' %}" class="group flex items-center px-4 py-3 text-lg rounded-lg hover:bg-neutral-800 transition-all duration-200">
+                    <i class="fas fa-envelope mr-3 text-neutral-400 group-hover:text-red-500"></i>
+                    <span class="group-hover:text-red-500">Mail</span>
+                </a>
+                
+                <a href="{% url 'resignation' %}" class="group flex items-center px-4 py-3 text-lg rounded-lg hover:bg-neutral-800 transition-all duration-200">
+                    <i class="fas fa-sign-out-alt mr-3 text-neutral-400 group-hover:text-red-500"></i>
+                    <span class="group-hover:text-red-500">Resignation</span>
+                </a>
+
+                {% if request.user.role == "HR" %}
+                <div class="mt-6 pt-6 border-t border-neutral-700">
+                    <h3 class="text-sm uppercase text-neutral-500 font-semibold mb-3 px-4">HR Administration</h3>
+                    
+                    <a href="{% url 'update_user_role' %}" class="group flex items-center px-4 py-3 text-lg rounded-lg hover:bg-neutral-800 transition-all duration-200">
+                        <i class="fas fa-users-cog mr-3 text-neutral-400 group-hover:text-red-500"></i>
+                        <span class="group-hover:text-red-500">Manage User Roles</span>
+                    </a>
+                    
+                    <a href="{% url 'user_list' %}" class="group flex items-center px-4 py-3 text-lg rounded-lg hover:bg-neutral-800 transition-all duration-200">
+                        <i class="fas fa-file-export mr-3 text-neutral-400 group-hover:text-red-500"></i>
+                        <span class="group-hover:text-red-500">Export Users CSV</span>
+                    </a>
+                </div>
+                {% endif %}
+            </nav>
+        </div>
+
+        <!-- User Actions -->
+        <div class="p-6 border-t border-neutral-700">
+            {% if user.is_authenticated %}
+            <div class="flex items-center mb-4">
+                <div class="w-10 h-10 rounded-full bg-neutral-700 flex items-center justify-center mr-3">
+                    <i class="fas fa-user text-neutral-400"></i>
+                </div>
+                <div>
+                    <p class="font-medium">{{ user.username }}</p>
+                    <p class="text-sm text-neutral-400">{{ user.role }}</p>
+                </div>
+            </div>
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="w-full flex items-center justify-center px-4 py-2 bg-neutral-800 hover:bg-red-900 text-white rounded-lg transition-colors duration-200">
+                    <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                </button>
+            </form>
+            {% else %}
+            <div class="flex space-x-2">
+                <a href="{% url 'login' %}" class="flex-1 flex items-center justify-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors duration-200">
+                    <i class="fas fa-sign-in-alt mr-2"></i> Login
+                </a>
+                <a href="{% url 'register' %}" class="flex-1 flex items-center justify-center px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg transition-colors duration-200">
+                    <i class="fas fa-user-plus mr-2"></i> Register
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 p-8 overflow-auto">
+        <!-- Header -->
+        <header class="mb-8 flex justify-between items-center">
+            <div>
+                <h2 class="text-3xl font-bold text-white">Welcome, {% if user.is_authenticated %}{{ user.username }}{% else %}Guest{% endif %}</h2>
+                <p class="text-neutral-400">{{ current_date|date:"l, F j, Y" }}</p>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <button class="p-2 bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors">
+                    <i class="fas fa-bell text-neutral-400"></i>
+                </button>
+                <button class="p-2 bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors">
+                    <i class="fas fa-cog text-neutral-400"></i>
+                </button>
+            </div>
+        </header>
+        
+        <!-- Dashboard Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+            <!-- Account Card -->
+            <div class="bg-neutral-800 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 border border-neutral-700">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-semibold text-white">Account</h3>
+                        <div class="w-10 h-10 rounded-full bg-red-900/30 flex items-center justify-center">
+                            <i class="fas fa-user-circle text-red-500"></i>
+                        </div>
+                    </div>
+                    <p class="text-neutral-400 mb-6">Manage your profile, password, and personal settings.</p>
+                    <a href="{% url 'account' %}" class="inline-flex items-center text-red-500 hover:text-red-400 transition-colors">
+                        <span>Go to Account</span>
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Projects Card -->
+            <div class="bg-neutral-800 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 border border-neutral-700">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-semibold text-white">Projects</h3>
+                        <div class="w-10 h-10 rounded-full bg-red-900/30 flex items-center justify-center">
+                            <i class="fas fa-project-diagram text-red-500"></i>
+                        </div>
+                    </div>
+                    <p class="text-neutral-400 mb-6">View and manage your assigned projects and tasks.</p>
+                    <a href="{% url 'project_list' %}" class="inline-flex items-center text-red-500 hover:text-red-400 transition-colors">
+                        <span>Go to Projects</span>
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Calendar Card -->
+            <div class="bg-neutral-800 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 border border-neutral-700">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-semibold text-white">Calendar</h3>
+                        <div class="w-10 h-10 rounded-full bg-red-900/30 flex items-center justify-center">
+                            <i class="fas fa-calendar-alt text-red-500"></i>
+                        </div>
+                    </div>
+                    <p class="text-neutral-400 mb-6">Track your meetings, deadlines, and important dates.</p>
+                    <a href="{% url 'calendar' %}" class="inline-flex items-center text-red-500 hover:text-red-400 transition-colors">
+                        <span>Go to Calendar</span>
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        {% if request.user.role == "HR" %}
+        <!-- HR Section -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-white mb-6">HR Administration</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Manage User Roles Card -->
+                <div class="bg-neutral-800 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 border border-neutral-700">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xl font-semibold text-white">Manage User Roles</h3>
+                            <div class="w-10 h-10 rounded-full bg-red-900/30 flex items-center justify-center">
+                                <i class="fas fa-users-cog text-red-500"></i>
+                            </div>
+                        </div>
+                        <p class="text-neutral-400 mb-6">Update roles and permissions for team members.</p>
+                        <a href="{% url 'update_user_role' %}" class="inline-flex items-center text-red-500 hover:text-red-400 transition-colors">
+                            <span>Manage Roles</span>
+                            <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Export Users Card -->
+                <div class="bg-neutral-800 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 border border-neutral-700">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xl font-semibold text-white">Export User Data</h3>
+                            <div class="w-10 h-10 rounded-full bg-red-900/30 flex items-center justify-center">
+                                <i class="fas fa-file-export text-red-500"></i>
+                            </div>
+                        </div>
+                        <p class="text-neutral-400 mb-6">Download user data in CSV format for reporting.</p>
+                        <a href="{% url 'user_list' %}" class="inline-flex items-center text-red-500 hover:text-red-400 transition-colors">
+                            <span>Export Users</span>
+                            <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Footer -->
+        <footer class="mt-auto pt-6 text-center text-neutral-500 text-sm">
+            <p>© 2025 ERP Dashboard. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>

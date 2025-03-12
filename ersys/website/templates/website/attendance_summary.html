@@ -1,0 +1,72 @@
+{% extends "website/sidebar.html" %}
+
+{% block title %}
+<title>Employee Attendance</title>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+    <h2 class="text-3xl font-bold text-gray-800 mb-6">Employee Attendance</h2>
+
+    <!-- Month Filter Form -->
+    <form method="GET" action="{% url 'attendance' %}" class="mb-6 flex items-center gap-4">
+        <label for="month" class="text-lg font-medium text-gray-700">Select Month:</label>
+        <select name="month" id="month" class="border border-gray-300 rounded-md px-3 py-2">
+            <option value="">All</option>
+            {% for month, name in months %}
+                <option value="{{ month }}" {% if selected_month == month %}selected{% endif %}>
+                    {{ name }}
+                </option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Filter</button>
+    </form>
+
+    <div class="overflow-x-auto">  
+        <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+            <thead class="bg-gray-800 text-white">
+                <tr>
+                    <th class="border px-4 py-2">User</th>
+                    <th class="border px-4 py-2">First Login</th>
+                    <th class="border px-4 py-2">Last Logout</th>
+                    <th class="border px-4 py-2">Total Hours</th>
+                    <th class="border px-4 py-2">Status</th>
+                </tr>
+            </thead>
+            <tbody class="text-gray-700">
+                {% for record in attendance_summary %}
+                <tr>
+                    <td class="border px-4 py-2">{{ record.user.first_name }} {{ record.user.last_name }}</td>
+                    <td class="border px-4 py-2">{{ record.first_login|date:"Y-m-d H:i:s" }}</td>
+                    <td class="border px-4 py-2">
+                        {% if record.last_logout %}
+                            {{ record.last_logout|date:"Y-m-d H:i:s" }}
+                        {% else %}
+                            <span class="text-red-600 font-semibold">Currently Logged In</span>
+                        {% endif %}
+                    </td>
+                    <td class="border px-4 py-2">
+                        {% if record.total_hours %}
+                            {{ record.total_hours }}
+                        {% else %}
+                            <span class="text-blue-500 font-semibold">Session Active</span>
+                        {% endif %}
+                    </td>
+                    <td class="border px-4 py-2">
+                        {% if record.last_logout %}
+                            <span class="text-green-600 font-semibold">Completed</span>
+                        {% else %}
+                            <span class="text-orange-500 font-semibold">Active</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-gray-500">No attendance records found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

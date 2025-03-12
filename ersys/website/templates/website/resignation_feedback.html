@@ -1,0 +1,278 @@
+{% extends "website/sidebar.html" %}
+
+{% block title %}
+<title>Resignation Approval</title>
+{% endblock title %}
+
+{% block content %}
+<div class="container mx-auto p-6 max-w-6xl">
+    <h2 class="text-3xl font-bold text-red-800 mb-6">Resignation Approval</h2>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Employee Information Card -->
+        <div class="lg:col-span-1">
+            <div class="bg-white shadow-lg rounded-lg border border-gray-200 overflow-hidden">
+                <div class="bg-red-700 text-white py-4 px-6">
+                    <h3 class="text-xl font-medium">Employee Details</h3>
+                </div>
+                
+                <div class="p-6">
+                    <div class="flex items-center mb-6">
+                        <div class="h-20 w-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 text-2xl font-bold">
+                            {{ resignation.user.first_name|slice:":1" }}{{ resignation.user.last_name|slice:":1" }}
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-xl font-semibold text-gray-800">{{ resignation.user.first_name }} {{ resignation.user.last_name }}</h4>
+                            <p class="text-gray-500">{{ resignation.user.email }}</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between border-b border-gray-200 pb-2">
+                            <span class="font-medium text-gray-600">Departmen0t:</span>
+                            <span>{{ resignation.user.department|default:"Not Specified" }}</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-200 pb-2">
+                            <span class="font-medium text-gray-600">Position:</span>
+                            <span>{{ resignation.user.position|default:"Not Specified" }}</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-200 pb-2">
+                            <span class="font-medium text-gray-600">Manager:</span>
+                            <span>{{ resignation.user.manager|default:"Not Assigned" }}</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-200 pb-2">
+                            <span class="font-medium text-gray-600">Submitted:</span>
+                            <span>{{ resignation.created_at|date:"M d, Y" }}</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-200 pb-2">
+                            <span class="font-medium text-gray-600">Status:</span>
+                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                {% if resignation.status == 'Approved' %}
+                                    bg-green-100 text-green-800
+                                {% elif resignation.status == 'Rejected' %}
+                                    bg-red-100 text-red-800
+                                {% else %}
+                                    bg-yellow-100 text-yellow-800
+                                {% endif %}">
+                                {{ resignation.status }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Approval and Feedback Section -->
+        <div class="lg:col-span-2">
+            <div class="bg-white shadow-lg rounded-lg border border-gray-200 overflow-hidden">
+                <div class="bg-red-700 text-white py-4 px-6">
+                    <h3 class="text-xl font-medium">Resignation Review</h3>
+                    <p class="text-red-100">Review employee feedback and provide your decision</p>
+                </div>
+                
+                <!-- Tabs for Employee Feedback and Approval Form -->
+                <div class="border-b border-gray-200">
+                    <nav class="flex -mb-px">
+                        <button id="tab-feedback" onclick="showTab('feedback')" class="tab-button text-red-600 border-red-500 active-tab w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm">
+                            Employee Feedback
+                        </button>
+                        <button id="tab-approval" onclick="showTab('approval')" class="tab-button text-gray-500 w-1/2 py-4 px-1 text-center border-b-2 border-transparent font-medium text-sm hover:text-gray-700">
+                            Manager/HR Approval
+                        </button>
+                    </nav>
+                </div>
+                
+                <!-- Employee Feedback Tab Content -->
+                <div id="content-feedback" class="tab-content p-6">
+                    {% if request.user == resignation.user %}
+                        <form method="POST" action="{% url 'resignation_feedback' resignation.id %}">
+                            {% csrf_token %}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div class="space-y-2">
+                                <h4 class="font-semibold text-gray-700">Overall Satisfaction</h4>
+                                <div class="p-3 bg-gray-50 rounded-lg">{{ form.overall_satisfaction }}</div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <h4 class="font-semibold text-gray-700">Work Environment</h4>
+                                <div class="p-3 bg-gray-50 rounded-lg">{{ form.work_environment }}</div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <h4 class="font-semibold text-gray-700">Manager Experience</h4>
+                                <div class="p-3 bg-gray-50 rounded-lg">{{ form.manager_experience }}</div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <h4 class="font-semibold text-gray-700">Growth Opportunities</h4>
+                                <div class="p-3 bg-gray-50 rounded-lg">{{ form.growth_opportunities }}</div>
+                            </div>
+                            <div class="space-y-2">
+                                <h4 class="font-semibold text-gray-700">Compensation Satisfaction</h4>
+                                <div class="p-3 bg-gray-50 rounded-lg">{{ form.compensation_satisfaction }}</div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <h4 class="font-semibold text-gray-700">Work-Life Balance</h4>
+                                <div class="p-3 bg-gray-50 rounded-lg">{{ form.work_life_balance }}</div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <h4 class="font-semibold text-gray-700">Would Recommend Company</h4>
+                                <div class="p-3 bg-gray-50 rounded-lg">{{ form.recommend_company }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2 mb-4">
+                            <h4 class="font-semibold text-gray-700">Reason for Leaving</h4>
+                            <div class="p-3 bg-gray-50 rounded-lg">{{ form.reason_for_leaving }}</div>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <h4 class="font-semibold text-gray-700">Additional Feedback</h4>
+                            <div class="p-3 bg-gray-50 rounded-lg min-h-24">{{ form.additional_feedback }}</div>
+                        </div>
+                        <div class="flex justify-end mt-6">
+                            <button type="submit" class="bg-red-700 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-800 transition duration-200 shadow-md">
+                                Submit Feedback
+                            </button>
+                        </div>
+                        </form>
+                    {% else %}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div class="space-y-2">
+                                <h4 class="font-semibold text-gray-700">Overall Satisfaction</h4>
+                                <div class="p-3 bg-gray-50 rounded-lg">{{ resignation.overall_satisfaction }}</div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <h4 class="font-semibold text-gray-700">Work Environment</h4>
+                                <div class="p-3 bg-gray-50 rounded-lg">{{ resignation.work_environment }}</div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <h4 class="font-semibold text-gray-700">Manager Experience</h4>
+                                <div class="p-3 bg-gray-50 rounded-lg">{{ resignation.manager_experience }}</div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <h4 class="font-semibold text-gray-700">Growth Opportunities</h4>
+                                <div class="p-3 bg-gray-50 rounded-lg">{{ resignation.growth_opportunities }}</div>
+                            </div>
+                            <div class="space-y-2">
+                                <h4 class="font-semibold text-gray-700">Compensation Satisfaction</h4>
+                                <div class="p-3 bg-gray-50 rounded-lg">{{ resignation.compensation_satisfaction }}</div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <h4 class="font-semibold text-gray-700">Work-Life Balance</h4>
+                                <div class="p-3 bg-gray-50 rounded-lg">{{ resignation.work_life_balance }}</div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <h4 class="font-semibold text-gray-700">Would Recommend Company</h4>
+                                <div class="p-3 bg-gray-50 rounded-lg">{{ resignation.recommend_company }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2 mb-4">
+                            <h4 class="font-semibold text-gray-700">Reason for Leaving</h4>
+                            <div class="p-3 bg-gray-50 rounded-lg">{{ resignation.reason_for_leaving }}</div>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <h4 class="font-semibold text-gray-700">Additional Feedback</h4>
+                            <div class="p-3 bg-gray-50 rounded-lg min-h-24">{{ resignation.additional_feedback }}</div>
+                        </div>
+
+                    {% endif %}
+                    </div>
+                    
+                <!-- Manager/HR Approval Tab Content -->
+                <div id="content-approval" class="tab-content p-6 hidden">
+                    <form method="POST" action="{% url 'process_resignation' resignation.id %}">
+                        {% csrf_token %}
+                        
+                        <!-- Manager Section -->
+                        {% if request.user.role == "Manager" or request.user.is_superuser %}
+                        <div class="mb-6 pb-6 border-b border-gray-200">
+                            <h4 class="font-semibold text-lg text-gray-800 mb-4">Manager Approval</h4>
+                            
+                            <div class="mb-4">
+                                <label class="block text-gray-700 font-medium mb-2">Manager Comments:</label>
+                                <textarea name="manager_comments" rows="4" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Provide your comments about this resignation request...">{{ resignation.manager_comments }}</textarea>
+                            </div>
+                            
+                            <div class="flex items-center space-x-4">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="manager_approved" value="true" {% if resignation.manager_approved %}checked{% endif %} class="form-radio h-5 w-5 text-red-600">
+                                    <span class="ml-2 text-gray-700">Approve</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="manager_approved" value="false" {% if resignation.manager_approved == False and resignation.status != 'Pending' %}checked{% endif %} class="form-radio h-5 w-5 text-red-600">
+                                    <span class="ml-2 text-gray-700">Reject</span>
+                                </label>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- HR Section -->
+                        {% if request.user.role == "HR" or request.user.is_superuser %}
+                        <div class="mb-6">
+                            <h4 class="font-semibold text-lg text-gray-800 mb-4">HR Approval</h4>
+                            
+                            <div class="mb-4">
+                                <label class="block text-gray-700 font-medium mb-2">HR Comments:</label>
+                                <textarea name="hr_comments" rows="4" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Provide your comments about this resignation request...">{{ resignation.hr_comments|default:"" }}</textarea>
+                            </div>
+                            
+                            <div class="flex items-center space-x-4">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="hr_approved" value="true" {% if resignation.hr_approved %}checked{% endif %} class="form-radio h-5 w-5 text-red-600">
+                                    <span class="ml-2 text-gray-700">Approve</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="hr_approved" value="false" {% if resignation.hr_approved == False and resignation.status != 'Pending' %}checked{% endif %} class="form-radio h-5 w-5 text-red-600">
+                                    <span class="ml-2 text-gray-700">Reject</span>
+                                </label>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Submit Button -->
+                        <div class="flex justify-end">
+                            <button type="submit" class="bg-red-700 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-800 transition duration-200 shadow-md">
+                                Submit Decision
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    function showTab(tabName) {
+        // Hide all tab contents
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.add('hidden');
+        });
+        
+        // Remove active class from all tabs
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.classList.remove('text-red-600', 'border-red-500', 'active-tab');
+            button.classList.add('text-gray-500', 'border-transparent');
+        });
+        
+        // Show the selected tab content
+        document.getElementById('content-' + tabName).classList.remove('hidden');
+        
+        // Add active class to the selected tab
+        document.getElementById('tab-' + tabName).classList.remove('text-gray-500', 'border-transparent');
+        document.getElementById('tab-' + tabName).classList.add('text-red-600', 'border-red-500', 'active-tab');
+    }
+</script>
+{% endblock %}
+{% endblock %}

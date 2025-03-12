@@ -1,0 +1,141 @@
+{% extends 'website/sidebar.html' %}
+{% block title %}
+<title>Project Timeline</title>
+{% endblock title %}
+{% block content %}
+
+<div class="container mx-auto p-8">
+    <!-- Project Header -->
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <h2 class="text-2xl font-bold text-gray-800">💼 {{ project.project_name }}</h2>
+        <p class="text-gray-700 mt-1">Description : {{ project.proj_des }}</p>
+        <p class="text-gray-700 mt-1"> Members :  
+            {% for member in project.members.all %}
+                {{ member.first_name }} {{ member.last_name }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        </p>
+    </div>
+
+    <!-- Timeline Section -->
+    <h3 class="text-xl font-semibold mt-8 text-gray-800">📅 Project Timeline</h3>
+    <div class="relative border-l-4 border-red-500 pl-6 mt-6 space-y-6">
+
+        <!-- Start Date -->
+        <div>
+            <h3 class="text-sm font-semibold text-gray-600">Project Start : {{ project.start_date }}</h3>
+        </div>
+
+        <!-- Updates and Comments -->
+        {% for update in updates %}
+        
+        <div class="flex flex-col md:flex-row gap-6">
+            <!-- Employee Updates -->
+            <div class="w-full md:w-1/2 bg-white shadow-md rounded-lg p-6 border border-gray-300">
+                <div class="flex justify-between items-center">
+                    <h4 class="text-md font-semibold text-gray-800">{{ update.updated_by.username }}</h4>
+                    <time class="text-xs text-gray-500">{{ update.timestamp|date:"d M Y, H:i" }}</time>
+                </div>
+                <p class="text-sm text-gray-700 mt-2">{{ update.description }}</p>
+                <span class="text-xs font-medium px-2.5 py-0.5 rounded {{ update.status|yesno:'bg-green-200 text-green-800,bg-gray-200 text-gray-800' }}">
+                    {{ update.status }}
+                </span>
+                
+                {% if update.is_late %}
+                <span class="text-xs mx-4 font-medium px-2.5 py-0.5 rounded bg-red-200 text-red-800">
+                    Late submission
+                </span>
+                {% endif %}
+
+                {% if user.role == "Manager" %}
+                    <button type="button" onclick="toggleReviewForm('{{ update.id }}')" 
+                        class="mt-3 text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm mx-4 px-4 py-2">
+                        Review PR
+                    </button>
+                {% endif %}
+
+
+
+            </div>
+
+        
+
+            <!-- pr review ui -->
+            <div class="w-1/2 pl-4">
+                {% for comment in comments %}
+                    {% if comment.update == update %}
+                    <div class="p-4 mt-4 border rounded-lg shadow-md 
+                                {% if comment.approved %} bg-green-100 border-green-400 {% else %} bg-red-100 border-red-400 {% endif %}">
+                        <div class="flex justify-between items-center">
+                            <h4 class="text-md font-semibold">{{ comment.commented_by.username }}</h4>
+                            <time class="text-xs text-gray-500">{{ comment.timestamp|date:"d M Y, H:i" }}</time>
+                        </div>
+                        <p class="text-sm text-gray-700 mt-2">{{ comment.comment }}</p>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+
+                <!-- PR Review form-->
+                <div id="reviewForm-{{ update.id }}" class="hidden mt-2">
+                    {% if user.role == "Manager" %}
+                    <form method="POST" class="mt-2 p-4 bg-white shadow-md rounded-lg border">
+                        {% csrf_token %}
+                        <input type="hidden" name="update_id" value="{{ update.id }}">
+                        <textarea name="comment" placeholder="Add a comment..." 
+                            class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-300"></textarea>
+                        <div class="mt-2 flex gap-3">
+                            <button type="submit" name="approved"
+                                class="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5">
+                                Approve
+                            </button>
+                            <button type="submit" name="disapproved"
+                                class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5">
+                                Disapprove
+                            </button>
+                        </div>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+        {% empty %}
+        <p class="text-gray-500">No updates yet.</p>
+        {% endfor %}
+
+        <!-- End Date -->
+        {% if project.end_date %}
+        <div>
+            <h3 class="text-sm font-semibold text-gray-600">🎯 Project Completion : {{ project.end_date }}</h3>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Employee Task Update Form -->
+    {% if user.role == "Employee" %}
+    <div class="mt-8 bg-white shadow-md rounded-lg p-6">
+        <h3 class="text-lg font-semibold text-gray-800">PR Request</h3>
+        <form method="POST">
+            {% csrf_token %}
+            <textarea name="description" placeholder="Describe your request..." class="w-full border p-2 mt-2 rounded"></textarea>
+            <select name="status" class="border p-2 w-full mt-2 rounded">
+                <option value="Started">Started</option>
+                <option value="Update">Updated</option>
+                <option value="Completed">Completed</option>
+            </select>
+            <button type="submit" name="add_update"
+                class="relative bg-green-600 mt-2 text-white font-semibold py-2 px-2 rounded-lg transition duration-200 shadow-md">
+                Submit Request
+            </button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function toggleReviewForm(updateId) {
+    let form = document.getElementById(`reviewForm-${updateId}`);
+    form.classList.toggle("hidden");
+}
+</script>
+
+{% endblock %}
