@@ -22,7 +22,7 @@ urlpatterns = [
 
     #Calendar
     path("calendar/", views.project_calendar, name="calendar"),
-    path("calendar/events/", views.project_events, name="project_events"),
+    path("calendar/events/", views.calendar_events, name="calendar_events"),
 
     #Account
     path('account/', views.account, name='account'),

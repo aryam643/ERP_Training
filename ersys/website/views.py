@@ -17,7 +17,9 @@ from django.utils.timezone import localtime
 from django.db.models.functions import TruncDate
 from django.core.mail import send_mail
 from django.conf import settings
-from django.http import HttpResponseRedirect
+import requests
+from datetime import datetime
+
 
 # User Authentication
 
@@ -528,7 +530,7 @@ def resignation_feedback(request, resignation_id):
 
     return render(request, 'website/resignation_feedback.html', {'form': form, 'resignation': resignation})
 
-
+#Resignation
 def process_resignation(request, resignation_id):
     resignation = ResignRequest.objects.get(id=resignation_id)            
 
@@ -568,3 +570,44 @@ def process_resignation(request, resignation_id):
         return redirect('resignation')  # or wherever you want to redirect
     
     return redirect('resignation_approval', resignation_id=resignation_id)
+
+
+API_KEY = "TrUwYgeIAZ6q7KmKNUqGOFq2163COKXe"
+
+def get_user_country(ip_address):
+    """Fetch user country from IP address."""
+    try:
+        response = requests.get(f"https://ipinfo.io/{ip_address}/json")
+        data = response.json()
+        return data.get("country", "IN")  # Default to 'IN' (India) if country not found
+    except:
+        return "IN"
+
+def get_holidays(api_key, country_code, year):
+    """Fetch national holidays from Calendarific API"""
+    url = f'https://calendarific.com/api/v2/holidays?api_key={api_key}&country={country_code}&year={year}'
+    response = requests.get(url)
+    
+    if response.status_code == 200:
+        holidays = response.json().get('response', {}).get('holidays', [])
+        return holidays
+    return []
+
+def calendar_events(request):
+    """Return holidays in FullCalendar format"""
+    ip_address = request.META.get('REMOTE_ADDR', '8.8.8.8')  # Default to Google DNS for testing
+    user_country = get_user_country(ip_address)
+
+    year = datetime.now().year
+    holidays = get_holidays(API_KEY, user_country, year)
+
+    events = []
+    for holiday in holidays:
+        events.append({
+            "title": holiday["name"],
+            "start": holiday["date"]["iso"],  # Ensure date format is correct
+            "description": holiday.get("description", "National Holiday"),
+            "allDay": True,
+        })
+
+    return JsonResponse(events, safe=False)

@@ -165,3 +165,13 @@ class ResignRequest(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.status}"
+    
+from django.db import models
+
+class Holiday(models.Model):
+    name = models.CharField(max_length=255)
+    date = models.DateField()
+    country = models.CharField(max_length=10)
+
+    def __str__(self):
+        return f"{self.name} - {self.date} ({self.country})"
