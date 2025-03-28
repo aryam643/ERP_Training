@@ -26,6 +26,10 @@
                     <i class="fas fa-calendar-check mr-3 text-neutral-400 group-hover:text-red-500"></i>
                     <span class="group-hover:text-red-500">Attendance</span>
                 </a>
+                <a href="{% url 'leave' %}" class="group flex items-center px-4 py-3 text-lg rounded-lg hover:bg-neutral-800 transition-all duration-200">
+                    <i class="fas fa-calendar-alt mr-3 text-neutral-400 group-hover:text-red-500"></i>
+                    <span class="group-hover:text-red-500">Leave</span>
+                </a>
                 
                 <a href="{% url 'account' %}" class="group flex items-center px-4 py-3 text-lg rounded-lg hover:bg-neutral-800 transition-all duration-200">
                     <i class="fas fa-user-circle mr-3 text-neutral-400 group-hover:text-red-500"></i>
@@ -37,9 +41,9 @@
                     <span class="group-hover:text-red-500">Projects</span>
                 </a>
                 
-                <a href="{% url 'calendar' %}" class="group flex items-center px-4 py-3 text-lg rounded-lg hover:bg-neutral-800 transition-all duration-200">
+                <a href="{% url 'project_timeline' %}" class="group flex items-center px-4 py-3 text-lg rounded-lg hover:bg-neutral-800 transition-all duration-200">
                     <i class="fas fa-calendar-alt mr-3 text-neutral-400 group-hover:text-red-500"></i>
-                    <span class="group-hover:text-red-500">Calendar</span>
+                    <span class="group-hover:text-red-500">Timeline</span>
                 </a>
                 
                 <a href="{% url 'send_mail' %}" class="group flex items-center px-4 py-3 text-lg rounded-lg hover:bg-neutral-800 transition-all duration-200">
@@ -160,18 +164,101 @@
             <div class="bg-neutral-800 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 border border-neutral-700">
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-xl font-semibold text-white">Calendar</h3>
+                        <h3 class="text-xl font-semibold text-white">Current Timeline</h3>
                         <div class="w-10 h-10 rounded-full bg-red-900/30 flex items-center justify-center">
                             <i class="fas fa-calendar-alt text-red-500"></i>
                         </div>
                     </div>
                     <p class="text-neutral-400 mb-6">Track your meetings, deadlines, and important dates.</p>
-                    <a href="{% url 'calendar' %}" class="inline-flex items-center text-red-500 hover:text-red-400 transition-colors">
-                        <span>Go to Calendar</span>
+                    <a href="{% url 'project_timeline' %}" class="inline-flex items-center text-red-500 hover:text-red-400 transition-colors">
+                        <span>Go to Current Timeline</span>
                         <i class="fas fa-arrow-right ml-2"></i>
                     </a>
                 </div>
             </div>
+            <div class="bg-neutral-800 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 border border-neutral-700">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-semibold text-white">Guest Room Booking</h3>
+                        <div class="w-10 h-10 rounded-full bg-red-900/30 flex items-center justify-center">
+                            <i class="fas fa-bed text-red-500"></i>
+                        </div>
+                    </div>
+                    <p class="text-neutral-400 mb-6">Book and manage guest rooms effortlessly.</p>
+                    <a href="{% url 'book_room' %}" class="inline-flex items-center text-red-500 hover:text-red-400 transition-colors">
+                        <span>Go to Booking</span>
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="bg-neutral-800 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 border border-neutral-700">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-semibold text-white">Holiday Calendar</h3>
+                        <div class="w-10 h-10 rounded-full bg-red-900/30 flex items-center justify-center">
+                            <i class="fas fa-calendar-alt text-red-500"></i>
+                        </div>
+                    </div>
+                    <p class="text-neutral-400 mb-6">View upcoming holidays and plan your leaves.</p>
+                    <a href="{% url 'holiday_calendar' %}" class="inline-flex items-center text-red-500 hover:text-red-400 transition-colors">
+                        <span>View Holidays</span>
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="bg-neutral-800 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 border border-neutral-700">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-semibold text-white">Leave Management</h3>
+                        <div class="w-10 h-10 rounded-full bg-red-900/30 flex items-center justify-center">
+                            <i class="fas fa-calendar-check text-red-500"></i>
+                        </div>
+                    </div>
+                    <p class="text-neutral-400 mb-6">Apply for leave, check approval status, and manage your leave history.</p>
+                    <a href="{% url 'leave' %}" class="inline-flex items-center text-red-500 hover:text-red-400 transition-colors">
+                        <span>Manage Leaves</span>
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+            </div>
+
+
+            <div class="bg-neutral-800 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 border border-neutral-700">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-semibold text-white">Resignation</h3>
+                        <div class="w-10 h-10 rounded-full bg-red-900/30 flex items-center justify-center">
+                            <i class="fas fa-sign-out-alt text-red-500"></i>
+                        </div>
+                    </div>
+                    <p class="text-neutral-400 mb-6">Submit your resignation and track approval status.</p>
+                    <a href="{% url 'resignation' %}" class="inline-flex items-center text-red-500 hover:text-red-400 transition-colors">
+                        <span>Submit Resignation</span>
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+            </div>
+            
+
+            <div class="bg-neutral-800 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 border border-neutral-700">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-semibold text-white">Mail System</h3>
+                        <div class="w-10 h-10 rounded-full bg-red-900/30 flex items-center justify-center">
+                            <i class="fas fa-envelope text-red-500"></i>
+                        </div>
+                    </div>
+                    <p class="text-neutral-400 mb-6">Send and receive emails directly from the ERP system.</p>
+                    <a href="{% url 'send_mail' %}" class="inline-flex items-center text-red-500 hover:text-red-400 transition-colors">
+                        <span>Access Mail</span>
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+            </div>
+            
+            
+            
+            
         </div>
         
         {% if request.user.role == "HR" %}

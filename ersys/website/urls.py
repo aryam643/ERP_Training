@@ -13,7 +13,8 @@ urlpatterns = [
 
     # Project Management
     path('projects/', views.project_list, name='project_list'),
-
+    path('project_events/', views.project_events, name='project_events'),
+    path('project_timeline/', views.project_timeline, name='project_timeline'),
     path('projects/add/', views.add_project, name='add_project'),
     path('proj_des/<int:project_id>/', views.proj_des, name='proj_des'),
     path('update-project/<int:id>/', views.update_project, name='update_project'),
@@ -21,8 +22,10 @@ urlpatterns = [
     path('change-status/<int:project_id>/', views.change_status, name='change_status'),
 
     #Calendar
-    path("calendar/", views.project_calendar, name="calendar"),
-    path("calendar/events/", views.calendar_events, name="calendar_events"),
+    path("holiday_calendar/", views.holiday_calendar, name="holiday_calendar"),
+    path("holidays/", views.get_main_holidays, name="get_main_holidays"),
+    # path("calendar/events/", views.calendar_events, name="calendar_events"),
+    path("calendar/room_events/", views.get_bookings, name="get_bookings"),
 
     #Account
     path('account/', views.account, name='account'),
@@ -38,6 +41,16 @@ urlpatterns = [
     path('send_mail',views.send_django_mail,name='send_mail'),
     path('send_email_success/', views.send_email_success, name='send_email_success'),
 
+
+
+    #room_booking
+    path("book/", views.book_room, name="book_room"),
+    path("my-bookings/", views.booking_list, name="booking_list"),
+    path("get-bookings/", views.get_bookings, name="get_bookings"),
+    path('check-availability/', views.check_availability, name='check_availability'),
+
+
+    
     #resignation
     path('resignation',views.resign,name='resignation'),
     path('resignation/manager', views.manager_resign, name='manager_review_resignation'),
@@ -48,6 +61,11 @@ urlpatterns = [
     path('change-status/<int:resignation_id>/', views.change_status, name='change_status'),
     path('resignation/<int:resignation_id>/process/', views.process_resignation, name='process_resignation'),
 
+    #leave
+    path('leave/',views.leave,name='leave'),
+    path('leave/status/',views.leave_status,name='leave_status'),
+    path('leave/manager', views.manager_approval, name='manager_review_resignation'),
+    path('leave/status/approval/<int:leave_id>/', views.process_leave, name='process_leave'),
 
     
 ]

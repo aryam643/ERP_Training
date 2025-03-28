@@ -1,0 +1,385 @@
+{% extends "website/sidebar.html" %}
+{% block title %}
+<title>My Bookings</title>
+{% endblock %}
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.12.0/toastify.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.12.0/toastify.min.js"></script>
+
+<div class="flex flex-col min-h-screen bg-gradient-to-b from-neutral-900 to-neutral-800 p-6">
+  <div class="w-full  mx-auto">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+      <h1 class="text-4xl font-bold text-white">
+        <span class="bg-clip-text text-transparent bg-gradient-to-r from-red-400 via-red-500 to-red-600">Check Bookings</span>
+      </h1>
+      <a href="{% url 'book_room' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-all flex items-center gap-2 shadow-lg hover:shadow-blue-500/30">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+        Book New Room
+      </a>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Calendar Section -->
+      <div class="lg:col-span-2">
+        <div class="bg-white rounded-xl shadow-xl transition-all hover:shadow-2xl">
+          <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b flex justify-between items-center rounded-lg">
+            <h3 class="text-xl font-semibold text-gray-800">Booking Calendar</h3>
+            <div class="flex gap-3">
+              <button id="todayBtn" class="px-4 py-2 text-sm bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-lg transition-all">Today</button>
+              <div class="flex">
+                <button id="prevMonthBtn" class="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-l-lg transition-all">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button id="nextMonthBtn" class="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-r-lg transition-all">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div id="calendar-legend" class="px-6 pt-4"></div>
+          <div id="calendar" class="p-6"></div>
+        </div>
+      </div>
+
+<!-- Booked Rooms Section -->
+        <div class="space-y-6">
+            <div class="bg-white rounded-xl shadow-xl transition-all hover:shadow-2xl h-[800px] flex flex-col">
+            <div class="px-6 py-4 bg-gradient-to-r from-red-50 to-red-100 border-b rounded-t-xl">
+                <div class="flex justify-between items-center rounded-lg">
+                <h3 class="text-xl font-semibold text-gray-800">Booked Rooms</h3>
+                <span id="bookingCount" class="px-3 py-1 text-sm text-red-600 bg-red-100 rounded-full"></span>
+                </div>
+            </div>
+            
+            <!-- Scrollable Content -->
+            <div class="p-6 flex-grow overflow-y-auto rounded-lg">
+                <div id="bookedRoomsList" class="space-y-4">
+                <div class="flex justify-center rounded-lg">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+                </div>
+                </div>
+            </div>
+            </div>
+        </div>
+  
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    let calendarEl = document.getElementById("calendar");
+    let legendEl = document.getElementById("calendar-legend");
+    let bookedRoomsList = document.getElementById("bookedRoomsList");
+    let bookingCountEl = document.getElementById("bookingCount");
+    let todayBtn = document.getElementById("todayBtn");
+    let prevMonthBtn = document.getElementById("prevMonthBtn");
+    let nextMonthBtn = document.getElementById("nextMonthBtn");
+    let exportBookingsBtn = document.getElementById("exportBookings");
+    let calendar;
+    let existingBookings = [];
+
+    // Room colors
+    const roomColors = {
+      "Single Room-1": "#ef4444",  // Red
+      "Single Room-2": "#f97316", // Orange
+      "Double Room-1": "#22c55e", // Green
+      "Double Room-2": "#3b82f6", // Blue
+      "Family Suite": "#a855f7"   // Purple
+    };
+
+    // Create a color legend for rooms
+    const createRoomLegend = () => {
+      legendEl.innerHTML = '';
+      const legendContainer = document.createElement('div');
+      legendContainer.className = 'flex flex-wrap gap-3 mb-2';
+      
+      Object.entries(roomColors).forEach(([roomName, color]) => {
+        const legendItem = document.createElement('div');
+        legendItem.className = 'flex items-center gap-2 bg-gray-50 px-3 py-1 rounded-full shadow-sm';
+        
+        const colorBox = document.createElement('div');
+        colorBox.className = 'w-3 h-3 rounded-full';
+        colorBox.style.backgroundColor = color;
+        
+        const roomLabel = document.createElement('span');
+        roomLabel.className = 'text-sm text-gray-700';
+        roomLabel.textContent = roomName;
+        
+        legendItem.appendChild(colorBox);
+        legendItem.appendChild(roomLabel);
+        legendContainer.appendChild(legendItem);
+      });
+      
+      legendEl.appendChild(legendContainer);
+    };
+
+    // Format date in a nice way
+    function formatDate(dateString) {
+      const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+      return new Date(dateString).toLocaleDateString(undefined, options);
+    }
+
+    // Format time in a nice way
+    function formatTime(dateString) {
+      const options = { hour: '2-digit', minute: '2-digit' };
+      return new Date(dateString).toLocaleTimeString(undefined, options);
+    }
+
+    // Get color based on room name
+    function getRoomColor(title) {
+      for (const [roomName, color] of Object.entries(roomColors)) {
+        if (title.includes(roomName)) {
+          return color;
+        }
+      }
+      return "#ef4444"; // Default red
+    }
+
+    // Check if a booking is upcoming (starts within the next 24 hours)
+    function isUpcoming(startDate) {
+      const now = new Date();
+      const start = new Date(startDate);
+      const diffHours = (start - now) / (1000 * 60 * 60);
+      return diffHours > 0 && diffHours <= 24;
+    }
+
+    // Fetch existing bookings
+    function fetchBookings() {
+      bookedRoomsList.innerHTML = `
+        <div class="flex justify-center">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+        </div>
+      `;
+      
+      fetch('/get-bookings/')
+        .then(response => response.json())
+        .then(data => {
+          existingBookings = data;
+          
+          // Update booking count
+          bookingCountEl.textContent = `${data.length} booking${data.length !== 1 ? 's' : ''}`;
+          
+          // Create room legend
+          createRoomLegend();
+          
+          // Display booked rooms
+          displayBookedRooms(data);
+          
+          // Render calendar
+          renderCalendar(data);
+        })
+        .catch(error => {
+          bookedRoomsList.innerHTML = `
+            <div class="p-4 text-red-500 text-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p>Could not load bookings. Please try again later.</p>
+              <button id="retryBtn" class="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all">
+                Retry
+              </button>
+            </div>
+          `;
+          document.getElementById("retryBtn").addEventListener("click", fetchBookings);
+          console.error('Error fetching bookings:', error);
+        });
+    }
+
+    // Display booked rooms
+    function displayBookedRooms(bookings) {
+      if (bookings.length === 0) {
+        bookedRoomsList.innerHTML = `
+          <div class="text-center py-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+            </svg>
+            <p class="text-gray-500 mb-4">You haven't booked any rooms yet.</p>
+            <a href="{% url 'book_room' %}" class="inline-block px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all">
+              Book a room now
+            </a>
+          </div>
+        `;
+        return;
+      }
+
+      // Sort bookings: active first, then upcoming, then past
+      const sortedBookings = [...bookings].sort((a, b) => {
+        const aStart = new Date(a.start);
+        const aEnd = new Date(a.end);
+        const bStart = new Date(b.start);
+        const bEnd = new Date(b.end);
+        const now = new Date();
+        
+        const aActive = aStart <= now && aEnd >= now;
+        const bActive = bStart <= now && bEnd >= now;
+        
+        if (aActive && !bActive) return -1;
+        if (!aActive && bActive) return 1;
+        
+        const aUpcoming = isUpcoming(a.start);
+        const bUpcoming = isUpcoming(b.start);
+        
+        if (aUpcoming && !bUpcoming) return -1;
+        if (!aUpcoming && bUpcoming) return 1;
+        
+        return aStart - bStart;
+      });
+
+      let bookingsHTML = sortedBookings.map(booking => {
+        const startDate = new Date(booking.start);
+        const endDate = new Date(booking.end);
+        const now = new Date();
+        
+        const isActive = startDate <= now && endDate >= now;
+        const isPast = endDate < now;
+        const upcoming = isUpcoming(booking.start);
+        
+        const statusClass = isActive ? 'bg-green-100 text-green-800' : 
+                          upcoming ? 'bg-yellow-100 text-yellow-800' : 
+                          'bg-gray-100 text-gray-800';
+        
+        const statusText = isActive ? 'Active Now' : 
+                          upcoming ? 'Upcoming' : 
+                          'Past';
+                          
+        const roomColor = getRoomColor(booking.title);
+        
+        return `
+          <div class="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-all  relative">
+            <div class="absolute left-0 top-0 bottom-0 w-1" style="background-color: ${roomColor}"></div>
+            <div class="pl-2">
+              <div class="flex justify-between items-start">
+                <h4 class="font-semibold text-gray-800">${booking.title}</h4>
+                <span class="px-2 py-1 text-xs font-medium rounded-full ${statusClass}">
+                  ${statusText}
+                </span>
+              </div>
+              <div class="mt-3 space-y-1">
+                <div class="flex items-center text-sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span class="text-gray-600">${formatDate(booking.start)}</span>
+                </div>
+                <div class="flex items-center text-sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span class="text-gray-600">${formatTime(booking.start)} - ${formatTime(booking.end)}</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      bookedRoomsList.innerHTML = bookingsHTML;
+      
+    }
+
+    function renderCalendar(bookings) {
+      if (calendar) {
+        calendar.destroy();
+      }
+
+      calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: "dayGridMonth",
+        headerToolbar: false,
+        events: bookings.map(booking => ({
+          id: booking.id,
+          title: booking.title,
+          start: booking.start,
+          end: booking.end,
+          color: getRoomColor(booking.title)
+        })),
+        eventContent: function(arg) {
+          return { html: `<div class="p-1 text-xs text-white font-medium">${arg.event.title}</div>` };
+        },
+        eventDidMount: function(info) {
+          // Add tooltip styling
+          info.el.setAttribute('title', `${info.event.title}\n${formatDate(info.event.start)} ${formatTime(info.event.start)} - ${formatTime(info.event.end)}`);
+          info.el.classList.add('hover:opacity-80', 'transition-opacity');
+        },
+        dayMaxEvents: true,
+        height: 'auto',
+        eventTimeFormat: {
+          hour: '2-digit',
+          minute: '2-digit',
+          meridiem: 'short'
+        },
+        eventClick: function(info) {
+          const startDate = formatDate(info.event.start);
+          const startTime = formatTime(info.event.start);
+          const endTime = formatTime(info.event.end);
+          
+          Toastify({
+            text: `${info.event.title}\n${startDate}, ${startTime} - ${endTime}`,
+            duration: 3000,
+            close: true,
+            gravity: "top",
+            position: "center",
+            backgroundColor: getRoomColor(info.event.title),
+            className: "rounded-lg shadow-lg",
+          }).showToast();
+        },
+        dayCellDidMount: function(info) {
+          // Add subtle styling to today's cell
+          if (info.isPast) {
+            info.el.classList.add('bg-gray-50', 'opacity-80');
+          }
+        }
+      });
+
+      calendar.render();
+    }
+
+    // Initialize buttons
+    if (todayBtn) {
+      todayBtn.addEventListener("click", function() {
+        calendar.today();
+      });
+    }
+
+    if (prevMonthBtn) {
+      prevMonthBtn.addEventListener("click", function() {
+        calendar.prev();
+      });
+    }
+
+    if (nextMonthBtn) {
+      nextMonthBtn.addEventListener("click", function() {
+        calendar.next();
+      });
+    }
+
+    if (exportBookingsBtn) {
+      exportBookingsBtn.addEventListener("click", function() {
+        Toastify({
+          text: "Calendar export functionality would be implemented here",
+          duration: 3000,
+          gravity: "top",
+          position: "center",
+          backgroundColor: "#3b82f6",
+          className: "rounded-lg shadow-lg",
+        }).showToast();
+      });
+    }
+
+    // Initial fetch
+    fetchBookings();
+  });
+</script>
+{% endblock %}

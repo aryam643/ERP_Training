@@ -1,5 +1,7 @@
 from django import forms
 from .models import *
+from django.core.exceptions import ValidationError
+
 
 class UserRegistrationForm(forms.Form):
     first_name = forms.CharField(max_length=100, required=True)
@@ -41,7 +43,6 @@ class LoginForm(forms.Form):
 
 
 class ProjectForm(forms.ModelForm):
-    """Project creation form"""
     class Meta:
         model = Project
         fields = ["project_name", "members", "proj_des", "start_date", "end_date", "status"]
@@ -107,3 +108,54 @@ class HRFeedback(forms.ModelForm):
         model=ResignRequest
         fields=['hr_comments']
 
+class BookingForm(forms.ModelForm):
+    room = forms.ModelChoiceField(
+        queryset=Room.objects.all(),  # Dynamically fetch rooms
+        empty_label="Select a Room",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    start_time = forms.DateTimeField(
+        widget=forms.DateTimeInput(attrs={"type": "datetime-local"})
+    )
+    end_time = forms.DateTimeField(
+        widget=forms.DateTimeInput(attrs={"type": "datetime-local"})
+    )
+
+    class Meta:
+        model = Booking
+        fields = ["room", "start_time", "end_time"]
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start_time = cleaned_data.get("start_time")
+        end_time = cleaned_data.get("end_time")
+
+        if start_time and end_time:
+            if start_time < now():
+                raise forms.ValidationError("Start time cannot be in the past.")
+            if start_time >= end_time:
+                raise forms.ValidationError("End time must be after start time.")
+
+        return cleaned_data
+
+class LeaveApplicationForm(forms.ModelForm):
+    start_date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}))
+    end_date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}))
+    reason = forms.CharField(widget=forms.Textarea(attrs={'class': 'form-textarea'}), required=True)
+
+    class Meta:
+        model = Leave
+        fields = ["start_date", "end_date", "reason"]
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start_date = cleaned_data.get("start_date")
+        end_date = cleaned_data.get("end_date")
+
+        if start_date and end_date:
+            if start_date < now().date():
+                raise forms.ValidationError("Start date cannot be in the past.")
+            if start_date >= end_date:
+                raise forms.ValidationError("End date must be after the start date.")
+
+        return cleaned_data

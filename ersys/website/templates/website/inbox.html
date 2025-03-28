@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-neutral-800 rounded-xl shadow-lg p-6 border border-neutral-700">
+    <h3 class="text-xl font-semibold text-white mb-4">📧 Gmail Inbox</h3>
+    <ul>
+        {% for email in emails %}
+        <li class="mb-3 p-3 rounded-lg bg-neutral-900 border border-neutral-700">
+            <p class="text-red-500 font-semibold">{{ email.sender }}</p>
+            <p class="text-neutral-400">{{ email.subject }}</p>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

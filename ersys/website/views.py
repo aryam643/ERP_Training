@@ -19,10 +19,26 @@ from django.core.mail import send_mail
 from django.conf import settings
 import requests
 from datetime import datetime
+from django.views.decorators.csrf import csrf_exempt
+
 
 
 # User Authentication
-
+def project_timeline(request):
+    if request.user.role == "Employee":
+        projects = Project.objects.filter(members=request.user)
+    elif request.user.role == "Manager":
+        projects = Project.objects.filter(manager=request.user)
+    else:
+        projects = Project.objects.all()
+    employees = User.objects.filter(role="Employee")
+    managers = User.objects.filter(role="Manager")
+    context = {
+        'projects': projects,
+        'managers': managers,
+        'employees': employees
+    }
+    return render(request, 'website/project_timeline.html', context)
 # Home Page
 def home(request):
     return render(request, 'website/index.html')
@@ -85,7 +101,6 @@ def proj_des(request, project_id=None):
         "updates": updates,
         "comments": comments,
     })
-
 
 # User Registration
 def register(request):
@@ -275,8 +290,7 @@ def change_status(request, project_id):
         return JsonResponse({"success": False, "error": "Invalid JSON data"}, status=400)
     
 # Calendar View
-@login_required
-def project_calendar(request):
+def holiday_calendar(request):
     return render(request, "website/calendar.html")
 
 @login_required
@@ -348,6 +362,7 @@ def update_user_role(request):
 # Attendance Management
 @receiver(user_logged_in)
 def log_login(sender,request,user, **kwargs):
+    00
     Attendance.objects.create(user=user, login_time=now())
 
 @receiver(user_logged_out)
@@ -572,42 +587,158 @@ def process_resignation(request, resignation_id):
     return redirect('resignation_approval', resignation_id=resignation_id)
 
 
-API_KEY = "TrUwYgeIAZ6q7KmKNUqGOFq2163COKXe"
 
-def get_user_country(ip_address):
-    """Fetch user country from IP address."""
-    try:
-        response = requests.get(f"https://ipinfo.io/{ip_address}/json")
-        data = response.json()
-        return data.get("country", "IN")  # Default to 'IN' (India) if country not found
-    except:
-        return "IN"
+#room booking
+def room_booking_calendar(request):
+    return render(request, "website/room_booking.html")
 
-def get_holidays(api_key, country_code, year):
-    """Fetch national holidays from Calendarific API"""
-    url = f'https://calendarific.com/api/v2/holidays?api_key={api_key}&country={country_code}&year={year}'
-    response = requests.get(url)
-    
-    if response.status_code == 200:
-        holidays = response.json().get('response', {}).get('holidays', [])
-        return holidays
-    return []
+def room_booking(request):
+    return render(request, "website/my_booking.html")
 
-def calendar_events(request):
-    """Return holidays in FullCalendar format"""
-    ip_address = request.META.get('REMOTE_ADDR', '8.8.8.8')  # Default to Google DNS for testing
-    user_country = get_user_country(ip_address)
+def book_room(request):
+    if request.method == "POST":
+        form = BookingForm(request.POST)
+        if form.is_valid():
+            booking = form.save(commit=False)
+            booking.user = request.user
+            booking.save()
+            return redirect("booking_list")
+        else:
+            print("Form Errors:", form.errors)  
 
-    year = datetime.now().year
-    holidays = get_holidays(API_KEY, user_country, year)
+    else:
+        form = BookingForm()
 
+    rooms = Room.objects.all() 
+
+    return render(request, "website/room_booking.html", {"form": form, "rooms": rooms})
+
+
+@login_required
+def booking_list(request):
+    bookings = Booking.objects.filter(user=request.user).order_by("-start_time")
+    return render(request, "website/my_bookings.html", {"bookings": bookings})
+
+def get_bookings(request):
+    bookings = Booking.objects.all()
     events = []
-    for holiday in holidays:
+    for booking in bookings:
         events.append({
-            "title": holiday["name"],
-            "start": holiday["date"]["iso"],  # Ensure date format is correct
-            "description": holiday.get("description", "National Holiday"),
-            "allDay": True,
+            "title": f"Booked: {booking.room.name}",
+            "start": booking.start_time.strftime("%Y-%m-%dT%H:%M:%S"),
+            "end": booking.end_time.strftime("%Y-%m-%dT%H:%M:%S"),
+            "color": "#ff4d4d",
         })
-
     return JsonResponse(events, safe=False)
+
+@csrf_exempt
+def check_availability(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        room_id = data.get("room")
+        start_time = datetime.fromisoformat(data.get("start_time"))
+        end_time = datetime.fromisoformat(data.get("end_time"))
+
+        overlapping_bookings = Booking.objects.filter(
+            room_id=room_id,
+            start_time__lt=end_time,  # Existing booking must end before new start
+            end_time__gt=start_time,  # Existing booking must start after new end
+        )
+
+        available = not overlapping_bookings.exists()
+        return JsonResponse({"available": available})
+
+    return JsonResponse({"error": "Invalid request"}, status=400)
+
+API_KEY = "y47W1WOKSykWSWif4ZW4AnhbEpdbd5hj"
+
+def get_main_holidays(request):
+    country = request.user.location  
+    country_code_mapping = {"IN": "IN", "USA": "US", "UK": "GB", "CA": "CA", "AU": "AU"}
+    country_code = country_code_mapping.get(country, "US")  
+
+    year = 2025  
+    url = f"https://calendarific.com/api/v2/holidays?api_key={API_KEY}&country={country_code}&year={year}"
+
+    response = requests.get(url)
+
+    if response.status_code != 200:
+        return JsonResponse({"error": "Failed to fetch holidays", "details": response.json()}, status=response.status_code)
+
+    holidays_data = response.json()
+
+    if "response" not in holidays_data or "holidays" not in holidays_data["response"]:
+        return JsonResponse({"error": "Invalid API response"}, status=500)
+
+    holidays_list = holidays_data["response"]["holidays"]
+
+    # Format the holidays for FullCalendar
+    all_holidays = [
+        {
+            "title": holiday["name"],  
+            "start": holiday["date"]["iso"],  
+            "allDay": True  
+        }
+        for holiday in holidays_list
+    ]
+
+
+    return JsonResponse(all_holidays, safe=False)
+
+def leave(request):
+    if request.method == 'POST':
+        form = LeaveApplicationForm(request.POST)
+        if form.is_valid():
+            leave = form.save(commit=False)
+            leave.user = request.user
+            leave.save()
+            messages.success(request, "Leave request submitted successfully.")
+            return redirect('leave_status')
+        else:
+            messages.error(request, "There was an error with your form submission.")
+    
+    else:
+        form = LeaveApplicationForm()
+
+    return render(request, "website/leave.html", {"form": form})
+
+def leave_status(request):
+    if request.user.role == "Employee":
+        leaves = Leave.objects.filter(user=request.user)
+    elif request.user.role == "Manager":
+        leaves = Leave.objects.filter(user__manager=request.user) | Leave.objects.filter(user=request.user)
+    else:  # Admin or higher role
+        leaves = Leave.objects.all()
+    
+    return render(request, 'website/leave_status.html', {'leaves': leaves.distinct()})
+
+def manager_approval(request, leave_id):
+    leave = get_object_or_404(Leave, pk=leave_id)
+
+    if request.user.role == "Manager":
+        leave.manager_approved = True
+        leave.status = "Approved"
+        leave.save()
+        messages.success(request, "Leave request approved successfully.")
+    else:
+        messages.error(request, "You do not have permission to approve this leave.")
+
+    return redirect('leave_status')
+
+def process_leave(request, leave_id):
+    leave = get_object_or_404(Leave, id=leave_id)
+
+    if request.method == "POST":
+        print(1)
+        manager_approved = request.POST.get("manager_approved") == "true"
+
+        if request.user.role == "Manager" or request.user.is_superuser:
+            print(3)
+            leave.manager_approved = manager_approved
+            leave.status = "Approved" if manager_approved else "Rejected"
+            leave.save()
+            messages.success(request, "Leave decision submitted successfully.")
+        
+        return redirect('leave_status')
+
+    return render(request,'website/leave_approval.html', {'leave': leave})

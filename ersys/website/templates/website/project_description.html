@@ -1,141 +1,290 @@
 {% extends 'website/sidebar.html' %}
 {% block title %}
 <title>Project Timeline</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
 {% endblock title %}
-{% block content %}
 
-<div class="container mx-auto p-8">
+{% block content %}
+<div class="bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-700 px-4 py-8 w-full">
     <!-- Project Header -->
-    <div class="bg-white shadow-md rounded-lg p-6">
-        <h2 class="text-2xl font-bold text-gray-800">💼 {{ project.project_name }}</h2>
-        <p class="text-gray-700 mt-1">Description : {{ project.proj_des }}</p>
-        <p class="text-gray-700 mt-1"> Members :  
-            {% for member in project.members.all %}
-                {{ member.first_name }} {{ member.last_name }}{% if not forloop.last %}, {% endif %}
-            {% endfor %}
-        </p>
+    <div class="bg-blue-200 shadow-lg rounded-xl p-6 border border-gray-200 transition-all duration-300 hover:shadow-xl">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div class="space-y-3">
+                <div class="inline-flex items-center gap-3 bg-blue-50 px-4 py-1.5 rounded-full text-blue-700 text-sm font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd" />
+                        <path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z" />
+                    </svg>
+                    <span>Project</span>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-800">{{ project.project_name }}</h2>
+                <p class="text-gray-600">{{ project.proj_des }}</p>
+            </div>
+            
+            <div class="bg-gray-50 rounded-xl p-4 border border-gray-200 lg:min-w-[300px]">
+                <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Team Members</h4>
+                <div class="flex flex-wrap gap-2">
+                    {% for member in project.members.all %}
+                        <div class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-purple-100 text-purple-800 border border-purple-200">
+                            <span class="w-6 h-6 rounded-full bg-purple-500 text-white flex items-center justify-center text-xs font-bold mr-2">
+                                {{ member.first_name|slice:":1" }}
+                            </span>
+                            {{ member.first_name }} {{ member.last_name }}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Timeline Section -->
-    <h3 class="text-xl font-semibold mt-8 text-gray-800">📅 Project Timeline</h3>
-    <div class="relative border-l-4 border-red-500 pl-6 mt-6 space-y-6">
-
-        <!-- Start Date -->
-        <div>
-            <h3 class="text-sm font-semibold text-gray-600">Project Start : {{ project.start_date }}</h3>
+    <div class="mt-12">
+        <div class="flex items-center gap-3 mb-8">
+            <div class="bg-blue-100 p-2 rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-white">Project Timeline</h3>
         </div>
-
-        <!-- Updates and Comments -->
-        {% for update in updates %}
         
-        <div class="flex flex-col md:flex-row gap-6">
-            <!-- Employee Updates -->
-            <div class="w-full md:w-1/2 bg-white shadow-md rounded-lg p-6 border border-gray-300">
-                <div class="flex justify-between items-center">
-                    <h4 class="text-md font-semibold text-gray-800">{{ update.updated_by.username }}</h4>
-                    <time class="text-xs text-gray-500">{{ update.timestamp|date:"d M Y, H:i" }}</time>
-                </div>
-                <p class="text-sm text-gray-700 mt-2">{{ update.description }}</p>
-                <span class="text-xs font-medium px-2.5 py-0.5 rounded {{ update.status|yesno:'bg-green-200 text-green-800,bg-gray-200 text-gray-800' }}">
-                    {{ update.status }}
-                </span>
+        <div class="relative ml-6 border-l-4 border-indigo-500 pl-6 space-y-8">
+            <!-- Start Date -->
+            <div class="relative">
+                <!-- Timeline Dot (using absolute positioning and Tailwind classes only) -->
+                <div class="absolute -left-10 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-green-500 rounded-full border-4 border-white shadow-md"></div>
                 
-                {% if update.is_late %}
-                <span class="text-xs mx-4 font-medium px-2.5 py-0.5 rounded bg-red-200 text-red-800">
-                    Late submission
-                </span>
-                {% endif %}
-
-                {% if user.role == "Manager" %}
-                    <button type="button" onclick="toggleReviewForm('{{ update.id }}')" 
-                        class="mt-3 text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm mx-4 px-4 py-2">
-                        Review PR
-                    </button>
-                {% endif %}
-
-
-
-            </div>
-
-        
-
-            <!-- pr review ui -->
-            <div class="w-1/2 pl-4">
-                {% for comment in comments %}
-                    {% if comment.update == update %}
-                    <div class="p-4 mt-4 border rounded-lg shadow-md 
-                                {% if comment.approved %} bg-green-100 border-green-400 {% else %} bg-red-100 border-red-400 {% endif %}">
-                        <div class="flex justify-between items-center">
-                            <h4 class="text-md font-semibold">{{ comment.commented_by.username }}</h4>
-                            <time class="text-xs text-gray-500">{{ comment.timestamp|date:"d M Y, H:i" }}</time>
-                        </div>
-                        <p class="text-sm text-gray-700 mt-2">{{ comment.comment }}</p>
+                <div class="bg-white shadow-md rounded-xl p-4 border-l-4 border-green-500">
+                    <div class="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5.5a.75.75 0 001.5 0V5z" clip-rule="evenodd" />
+                        </svg>
+                        <h3 class="text-sm font-semibold text-gray-700">Project Start</h3>
+                        <span class="text-sm font-medium text-green-600 bg-green-50 px-2.5 py-0.5 rounded-full">
+                            {{ project.start_date }}
+                        </span>
                     </div>
-                    {% endif %}
-                {% endfor %}
-
-                <!-- PR Review form-->
-                <div id="reviewForm-{{ update.id }}" class="hidden mt-2">
-                    {% if user.role == "Manager" %}
-                    <form method="POST" class="mt-2 p-4 bg-white shadow-md rounded-lg border">
-                        {% csrf_token %}
-                        <input type="hidden" name="update_id" value="{{ update.id }}">
-                        <textarea name="comment" placeholder="Add a comment..." 
-                            class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-300"></textarea>
-                        <div class="mt-2 flex gap-3">
-                            <button type="submit" name="approved"
-                                class="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5">
-                                Approve
-                            </button>
-                            <button type="submit" name="disapproved"
-                                class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5">
-                                Disapprove
-                            </button>
-                        </div>
-                    </form>
-                    {% endif %}
                 </div>
             </div>
 
-        </div>
-        {% empty %}
-        <p class="text-gray-500">No updates yet.</p>
-        {% endfor %}
+            <!-- Updates and Comments -->
+            {% for update in updates %}
+            <div class="relative">
+                <!-- Timeline Dot -->
+                <div class="absolute -left-10 top-12 transform -translate-y-1/2 w-6 h-6 bg-indigo-500 rounded-full border-4 border-white shadow-md"></div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Employee Updates -->
+                    <div class="bg-white shadow-md rounded-xl overflow-hidden border border-gray-200 transition-all duration-300 hover:shadow-xl">
+                        <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-lg">
+                                        {{ update.updated_by.username|slice:":1" }}
+                                    </div>
+                                    <div>
+                                        <h4 class="text-md font-semibold text-gray-800">{{ update.updated_by.username }}</h4>
+                                        <time class="text-xs text-gray-500">{{ update.timestamp|date:"d M Y, H:i" }}</time>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-medium px-2.5 py-1 rounded-full {{ update.status|yesno:'bg-green-100 text-green-800 border border-green-200,bg-gray-100 text-gray-800 border border-gray-200' }}">
+                                        {{ update.status }}
+                                    </span>
+                                    
+                                    {% if update.is_late %}
+                                    <span class="text-xs font-medium px-2.5 py-1 rounded-full bg-red-100 text-red-800 border border-red-200">
+                                        Late
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="p-6">
+                            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                <p class="text-gray-700">{{ update.description }}</p>
+                            </div>
+                            
+                            {% if user.role == "Manager" %}
+                            <button type="button" onclick="toggleReviewForm('{{ update.id }}')" 
+                                class="mt-4 w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-200 flex items-center justify-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                                    <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                </svg>
+                                Review PR
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Comments and Review Section -->
+                    <div class="space-y-4">
+                        <!-- Comments -->
+                        {% for comment in comments %}
+                            {% if comment.update == update %}
+                            <div class="p-5 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg
+                                        {% if comment.approved %} bg-green-50 border border-green-200 {% else %} bg-red-50 border border-red-200 {% endif %}">
+                                <div class="flex justify-between items-center mb-3">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full {% if comment.approved %} bg-green-500 {% else %} bg-red-500 {% endif %} text-white flex items-center justify-center font-bold text-lg">
+                                            {{ comment.commented_by.username|slice:":1" }}
+                                        </div>
+                                        <div>
+                                            <h4 class="text-md font-semibold {% if comment.approved %} text-green-800 {% else %} text-red-800 {% endif %}">
+                                                {{ comment.commented_by.username }}
+                                            </h4>
+                                            <time class="text-xs {% if comment.approved %} text-green-600 {% else %} text-red-600 {% endif %}">
+                                                {{ comment.timestamp|date:"d M Y, H:i" }}
+                                            </time>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs font-medium px-3 py-1.5 rounded-full 
+                                                {% if comment.approved %} bg-green-200 text-green-800 {% else %} bg-red-200 text-red-800 {% endif %}">
+                                        {% if comment.approved %}Approved{% else %}Changes Requested{% endif %}
+                                    </span>
+                                </div>
+                                
+                                <div class="{% if comment.approved %} bg-green-100 {% else %} bg-red-100 {% endif %} rounded-lg p-4">
+                                    <p class="text-gray-700">{{ comment.comment }}</p>
+                                </div>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
 
-        <!-- End Date -->
-        {% if project.end_date %}
-        <div>
-            <h3 class="text-sm font-semibold text-gray-600">🎯 Project Completion : {{ project.end_date }}</h3>
+                        <!-- PR Review form-->
+                        <div id="reviewForm-{{ update.id }}" class="hidden">
+                            {% if user.role == "Manager" %}
+                            <form method="POST" class="bg-white shadow-lg rounded-xl p-6 border border-gray-300">
+                                {% csrf_token %}
+                                <input type="hidden" name="update_id" value="{{ update.id }}">
+                                
+                                <div class="mb-4">
+                                    <label for="comment-{{ update.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Review Comments
+                                    </label>
+                                    <textarea id="comment-{{ update.id }}" name="comment" placeholder="Add your review comments..." 
+                                        class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-blue-300 h-32 resize-none"></textarea>
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-4">
+                                    <button type="submit" name="approved"
+                                        class="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-3 transition-all duration-200 flex items-center justify-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                        </svg>
+                                        Approve
+                                    </button>
+                                    <button type="submit" name="disapproved"
+                                        class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-3 transition-all duration-200 flex items-center justify-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                        </svg>
+                                        Request Changes
+                                    </button>
+                                </div>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="relative">
+                <!-- Timeline Dot -->
+                <div class="absolute -left-10 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-gray-400 rounded-full border-4 border-white shadow-md"></div>
+                
+                <div class="bg-white shadow-md rounded-xl p-5 border-l-4 border-gray-300">
+                    <div class="flex items-center gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p class="text-gray-500 font-medium">No updates yet.</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- End Date -->
+            {% if project.end_date %}
+            <div class="relative">
+                <!-- Timeline Dot -->
+                <div class="absolute -left-10 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-red-500 rounded-full border-4 border-white shadow-md"></div>
+                
+                <div class="bg-white shadow-md rounded-xl p-4 border-l-4 border-red-500">
+                    <div class="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                        <h3 class="text-sm font-semibold text-gray-700">Project Completion</h3>
+                        <span class="text-sm font-medium text-red-600 bg-red-50 px-2.5 py-0.5 rounded-full">
+                            {{ project.end_date }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
         </div>
-        {% endif %}
     </div>
 
     <!-- Employee Task Update Form -->
     {% if user.role == "Employee" %}
-    <div class="mt-8 bg-white shadow-md rounded-lg p-6">
-        <h3 class="text-lg font-semibold text-gray-800">PR Request</h3>
-        <form method="POST">
-            {% csrf_token %}
-            <textarea name="description" placeholder="Describe your request..." class="w-full border p-2 mt-2 rounded"></textarea>
-            <select name="status" class="border p-2 w-full mt-2 rounded">
-                <option value="Started">Started</option>
-                <option value="Update">Updated</option>
-                <option value="Completed">Completed</option>
-            </select>
-            <button type="submit" name="add_update"
-                class="relative bg-green-600 mt-2 text-white font-semibold py-2 px-2 rounded-lg transition duration-200 shadow-md">
-                Submit Request
-            </button>
-        </form>
+    <div class="mt-12">
+        <div class="bg-white shadow-lg rounded-xl p-6 border border-gray-200">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="bg-purple-100 p-2 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800">Submit PR Request</h3>
+            </div>
+            
+            <form method="POST" class="space-y-5">
+                {% csrf_token %}
+                <div>
+                    <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+                        Request Description
+                    </label>
+                    <textarea id="description" name="description" placeholder="Describe your request in detail..." 
+                        class="w-full border border-gray-300 p-4 rounded-lg focus:ring-2 focus:ring-purple-300 focus:border-purple-300 h-32 resize-none"></textarea>
+                </div>
+                
+                <div>
+                    <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
+                        Status
+                    </label>
+                    <select id="status" name="status" 
+                        class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-purple-300 focus:border-purple-300 bg-white">
+                        <option value="Started">Started</option>
+                        <option value="Update">Updated</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+                </div>
+                
+                <button type="submit" name="add_update"
+                    class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 shadow-md focus:ring-4 focus:ring-purple-300 flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" />
+                    </svg>
+                    Submit Request
+                </button>
+            </form>
+        </div>
     </div>
     {% endif %}
 </div>
 
 <script>
 function toggleReviewForm(updateId) {
-    let form = document.getElementById(`reviewForm-${updateId}`);
-    form.classList.toggle("hidden");
+    const form = document.getElementById(`reviewForm-${updateId}`);
+    if (form.classList.contains('hidden')) {
+        form.classList.remove('hidden');
+    } else {
+        form.classList.add('hidden');
+    }
 }
 </script>
-
 {% endblock %}

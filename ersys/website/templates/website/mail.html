@@ -5,70 +5,94 @@
 {% endblock title %}
 
 {% block content %}
-<div class="container mx-auto p-6 max-w-2xl">
-    <div class="max-w-3xl mx-auto">
-        <!-- Header with gradient -->
-        <div class="bg-gradient-to-r from-red-700 to-red-800 rounded-t-lg shadow-lg">
-            <div class="px-6 py-4">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-2xl font-bold text-white">Send E-Mail</h2>
-                </div>
+<div class="container mx-auto p-6 w-full">
+    <div class="w-full mx-auto bg-white rounded-xl shadow-2xl overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-red-700 to-red-800 rounded-t-lg shadow-lg text-white">
+            <div class="px-6 py-4 flex justify-between items-center">
+                <h2 class="text-2xl font-semibold tracking-wide">Send Email</h2>
+                <svg class="w-8 h-8 text-white opacity-75" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                </svg>
             </div>
         </div>
 
-    {% if messages %}
-        <div class="mb-6">
-            {% for message in messages %}
-                <div class="p-4 mb-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-700 border border-green-200{% else %}bg-red-100 text-red-700 border border-red-200{% endif %}">
-                    <p class="flex items-center">
-                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+        {% if messages %}
+            <div class="px-6 pt-4">
+                {% for message in messages %}
+                    <div class="mb-4 p-4 rounded-lg {% if message.tags == 'success' %}bg-green-50 border-green-200 text-green-800{% else %}bg-red-50 border-red-200 text-red-800{% endif %} border flex items-center space-x-3">
+                        <svg class="w-6 h-6 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                             {% if message.tags == 'success' %}
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                             {% else %}
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
                             {% endif %}
                         </svg>
-                        {{ message }}
-                    </p>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-
-    <form method="POST" class="bg-white shadow-lg rounded-lg p-8">
-        {% csrf_token %}
-        
-        <div class="mb-6">
-            <label for="email-address" class="block text-gray-700 font-medium mb-2">Recipient Email:</label>
-            <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                    </svg>
-                </div>
-                <input type="email" id="email-address" name="address" required class="w-full pl-10 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:outline-none transition duration-200" placeholder="recipient@example.com">
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
             </div>
-        </div>
+        {% endif %}
 
-        <div class="mb-6">
-            <label for="email-subject" class="block text-gray-700 font-medium mb-2">Subject:</label>
-            <input type="text" id="email-subject" name="subject" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:outline-none transition duration-200" placeholder="Enter email subject">
-        </div>
+        <form method="POST" class="p-6 space-y-6">
+            {% csrf_token %}
+            
+            <div>
+                <label for="email-address" class="block text-sm font-medium text-gray-700 mb-2">Recipient Email</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                        </svg>
+                    </div>
+                    <input 
+                        type="email" 
+                        id="email-address" 
+                        name="address" 
+                        required 
+                        class="w-full pl-10 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent focus:outline-none transition duration-300 ease-in-out hover:border-red-300" 
+                        placeholder="recipient@example.com"
+                    >
+                </div>
+            </div>
 
-        <div class="mb-6">
-            <label for="email-message" class="block text-gray-700 font-medium mb-2">Message:</label>
-            <textarea id="email-message" name="message" rows="6" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:outline-none transition duration-200" placeholder="Type your message here..."></textarea>
-        </div>
+            <div>
+                <label for="email-subject" class="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                <input 
+                    type="text" 
+                    id="email-subject" 
+                    name="subject" 
+                    required 
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent focus:outline-none transition duration-300 ease-in-out hover:border-red-300" 
+                    placeholder="Enter email subject"
+                >
+            </div>
 
-        <div class="flex justify-end">
-            <button type="submit" class="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition duration-200 flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                </svg>
-                Send Email
-            </button>
-        </div>
-    </form>
+            <div>
+                <label for="email-message" class="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                <textarea 
+                    id="email-message" 
+                    name="message" 
+                    rows="6" 
+                    required 
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent focus:outline-none transition duration-300 ease-in-out hover:border-red-300" 
+                    placeholder="Type your message here..."
+                ></textarea>
+            </div>
+
+            <div class="flex justify-end">
+                <button 
+                    type="submit" 
+                    class="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition duration-300 ease-in-out transform hover:scale-105 flex items-center"
+                >
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                    </svg>
+                    Send
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
 {% endblock %}

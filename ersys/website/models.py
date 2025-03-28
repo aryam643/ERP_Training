@@ -34,23 +34,31 @@ class UserManager(BaseUserManager):
         return user
 
 
-class User(AbstractBaseUser, PermissionsMixin):  # ✅ Make sure you inherit PermissionsMixin
+class User(AbstractBaseUser, PermissionsMixin):
     ROLE_CHOICES = [
         ('Admin', 'Admin'),
         ('HR', 'HR'),
         ('Manager', 'Manager'),
         ('Employee', 'Employee'),
     ]
+    LOCATION_CHOICES=[
+        ('IN','IN'),
+        ('USA','USA'),
+        ('UK','UK'),
+        ('CA','CA'),
+        ('AU','AU'),
+    ]
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=100, unique=True)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     role = models.CharField(max_length=50, choices=ROLE_CHOICES, default='Employee')
+    location=models.CharField(max_length=50,choices=LOCATION_CHOICES,default='India')
     manager=models.ForeignKey('self',on_delete=models.SET_NULL,null=True,related_name='team',blank=True)
 
     is_active = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)
-    is_staff = models.BooleanField(default=False)  # ✅ This is required for Django Admin
+    is_staff = models.BooleanField(default=False) 
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -111,7 +119,7 @@ class Attendance(models.Model):
             self.duration=self.logout_time-self.login_time
         super().save(*args,**kwargs)
     def __str__(self):
-        return f"{self.login_time}"
+        return f"({self.login_time}-{self.user.username})"
 
 
 class ProjectUpdate(models.Model):
@@ -166,8 +174,6 @@ class ResignRequest(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.status}"
     
-from django.db import models
-
 class Holiday(models.Model):
     name = models.CharField(max_length=255)
     date = models.DateField()
@@ -175,3 +181,45 @@ class Holiday(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.date} ({self.country})"
+    
+class Room(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    capacity = models.IntegerField(default=1)
+    amenities = models.TextField(blank=True)
+    is_available = models.BooleanField(default=True)
+
+
+    def __str__(self):
+        return self.name
+
+class Booking(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    room = models.ForeignKey(Room, on_delete=models.CASCADE)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.room.name} booked by {self.user.username}"
+
+    class Meta:
+        unique_together = ("room", "start_time", "end_time")
+
+
+class Leave(models.Model):
+    user=models.ForeignKey(User,on_delete=models.CASCADE)
+    start_date=models.DateField()
+    end_date=models.DateField()
+    reason=models.TextField()
+    STATUS_CHOICES=[
+        ('Pending','Pending'),
+        ('Approved','Approved'),
+        ('Rejected','Rejected'),
+    ]
+    status=models.CharField(max_length=20,choices=STATUS_CHOICES,default='Pending')
+    manager_approved=models.BooleanField(default=False)
+    created_at=models.DateTimeField(auto_now_add=True)
+
+
+    def __str__(self):
+        return f"{self.user.username} - {self.status}"

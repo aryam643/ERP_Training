@@ -1,7 +1,7 @@
 {% extends "website/sidebar.html" %}
 
 {% block title %}
-<title>Project Calendar</title>
+<title>Holiday Calendar</title>
 {% endblock %}
 
 {% block content %}
@@ -14,30 +14,126 @@
     
         var calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: "dayGridMonth",
+            themeSystem: "standard",
+            height: 'auto',
             headerToolbar: {
                 left: "prev,next today",
                 center: "title",
                 right: "dayGridMonth,timeGridWeek,timeGridDay"
             },
-            events: "/calendar/events/",  // Fetch from Django
+            buttonText: {
+                today: 'Today',
+                month: 'Month',
+                week: 'Week',
+                day: 'Day'
+            },
+            events: function(fetchInfo, successCallback, failureCallback) {
+                fetch("/holidays")
+                    .then(response => response.json())
+                    .then(data => {
+                        if (Array.isArray(data)) {
+                            successCallback(data);
+                        } else {
+                            console.error("Unexpected response format:", data);
+                            failureCallback();
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error fetching holidays:", error);
+                        failureCallback();
+                    });
+            },
             eventClick: function(info) {
-                alert("Holiday: " + info.event.title + "\nDetails: " + (info.event.extendedProps.description || "No details available"));
-            }
+                Swal.fire({
+                    title: info.event.title,
+                    text: "This is a holiday!",
+                    icon: 'info',
+                    background: '#262626',
+                    color: '#fff',
+                    confirmButtonColor: '#dc2626'
+                });
+            },
+            eventColor: '#dc2626',
+            eventTextColor: '#ffffff',
+            aspectRatio: 1.35,
+            displayEventTime: false
         });
     
         calendar.render();
     });
-    </script>
-    
-    
+</script>
 
-<div class="flex flex-col justify-center items-center min-h-screen bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-700 p-6">
-    <!-- Heading -->
-    <h1 class="text-2xl font-bold mb-4 bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-700 text-white text-center w-full max-w-2xl p-4 rounded-xl shadow-lg">
-        Project Timeline
-    </h1>
+<!-- Sweet Alert for enhanced event clicking -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <div id="calendar" class="bg-gray-200 p-8 rounded-xl shadow-xl w-full max-w-2xl"></div>
+<!-- Main Container -->
+<div class="flex flex-col items-center min-h-screen bg-gradient-to-b from-neutral-900 via-neutral-800 to-neutral-700 p-6">
+    
+    <!-- Header Section -->
+    <div class="w-full max-w-5xl mb-8">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-red-400 to-red-600 mb-2">
+                    Holiday Calendar
+                </h1>
+                <p class="text-neutral-400 text-sm tracking-wide">
+                    Plan your leaves and stay updated with upcoming holidays
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Info Cards -->
+
+    <div class="w-full max-w-5xl mb-3 grid grid-cols-3 gap-2">
+        <div class="bg-neutral-800 p-4 rounded-xl border border-neutral-700">
+            <div class="flex items-center space-x-4">
+                <div class="bg-red-600 w-12 h-12 rounded-lg flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-neutral-300 font-semibold">Total Leaves</h3>
+                    <p class="text-red-400 text-2xl font-bold">6</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-neutral-800 p-4 rounded-xl border border-neutral-700">
+            <div class="flex items-center space-x-4">
+                <div class="bg-red-600 w-12 h-12 rounded-lg flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-neutral-300 font-semibold">Upcoming</h3>
+                    <p class="text-red-400 text-2xl font-bold">1</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-neutral-800 p-4 rounded-xl border border-neutral-700">
+            <div class="flex items-center space-x-4">
+                <div class="bg-red-600 w-12 h-12 rounded-lg flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-neutral-300 font-semibold">Completed</h3>
+                    <p class="text-red-400 text-2xl font-bold">0</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Calendar Container -->
+
+    <div class="bg-white p-3 rounded-xl shadow-2xl w-full max-w-5xl border border-neutral-700">
+        <div id="calendar" class="fc-theme-standard"></div>
+    </div>
+
+    
 </div>
 
 {% endblock %}

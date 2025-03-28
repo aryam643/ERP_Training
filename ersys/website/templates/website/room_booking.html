@@ -1,0 +1,379 @@
+{% extends "website/sidebar.html" %}
+
+{% block title %}
+<title>Room Booking</title>
+{% endblock %}
+
+{% block content %}
+<!-- FullCalendar & Toastify CSS/JS -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.12.0/toastify.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.12.0/toastify.min.js"></script>
+
+<div class="flex flex-col min-h-screen bg-gradient-to-b from-neutral-900 to-neutral-800 p-6">
+  <div class="w-full  mx-auto">
+    
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+      <h1 class="text-4xl font-bold text-white">
+        <span class="bg-clip-text text-transparent bg-gradient-to-r from-red-400 via-red-500 to-red-600">Room Booking</span>
+      </h1>
+      <div class="flex gap-4">
+        <a href="/my-bookings/" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-all flex items-center gap-2 shadow-lg hover:shadow-blue-500/30">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          Bookings
+        </a>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Calendar Section -->
+      <div class="lg:col-span-2">
+        <div class="bg-white rounded-xl shadow-xl transition-all hover:shadow-2xl">
+          <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b flex justify-between items-center rounded-lg">
+            <h3 class="text-xl font-semibold text-gray-800">Availability Calendar</h3>
+            <div class="flex gap-3">
+              <h2 id="calendar-month-title" class="text-xl font-bold text-gray-800"></h2>
+              <button id="todayBtn" class="px-4 py-2 text-sm bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-lg transition-all">Today</button>
+              <div class="flex">
+                <button id="prevMonthBtn" class="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-l-lg transition-all">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button id="nextMonthBtn" class="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-r-lg transition-all">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div id="calendar-legend" class="px-6 pt-4"></div>
+          <div id="calendar" class="p-6"></div>
+        </div>
+      </div>
+      
+      <!-- Booking Form -->
+      <div>
+        <div class="bg-white rounded-xl shadow-xl transition-all hover:shadow-2xl mb-6">
+          <div class="px-6 py-4 bg-gradient-to-r from-red-50 to-red-100 border-b rounded-t-xl">
+            <h3 class="text-xl font-semibold text-gray-800">Book a Room</h3>
+          </div>
+          <div class="p-6">
+            {% if form.non_field_errors %}
+              <div class="mb-5 p-4 bg-red-50 text-red-700 text-sm rounded-lg border border-red-200">
+                {% for error in form.non_field_errors %}
+                  <p class="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {{ error }}
+                  </p>
+                {% endfor %}
+              </div>
+            {% endif %}
+            <form id="bookingForm" action="{% url 'book_room' %}" method="POST" class="space-y-5">
+              {% csrf_token %}
+              
+              <div class="space-y-2">
+                <label for="id_room" class="block text-sm font-medium text-gray-700">Select Room</label>
+                {{ form.room }}
+              </div>
+              <div class="space-y-2">
+                <label for="id_start_time" class="block text-sm font-medium text-gray-700">Start Time</label>
+                {{ form.start_time }}
+              </div>
+              <div class="space-y-2">
+                <label for="id_end_time" class="block text-sm font-medium text-gray-700">End Time</label>
+                {{ form.end_time }}
+              </div>
+
+              <div class="pt-3">
+                <button type="submit" id="submitBooking" class="w-full flex justify-center items-center px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg shadow-lg hover:shadow-red-500/30 transition-all font-medium">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Book Room
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+        
+        <!-- Quick Information Card -->
+        <div class="bg-white rounded-xl shadow-xl transition-all hover:shadow-2xl">
+          <div class="px-6 py-4 bg-gradient-to-r from-blue-50 to-blue-100 border-b rounded-t-xl">
+            <h3 class="text-xl font-semibold text-gray-800">Quick Information</h3>
+          </div>
+          <div class="p-6">
+            <div class="space-y-4">
+              <div class="flex items-start gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <h4 class="font-medium text-gray-800">Booking Hours</h4>
+                  <p class="text-sm text-gray-600">Rooms can be booked from 8:00 AM to 10:00 PM daily.</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <h4 class="font-medium text-gray-800">Cancellation Policy</h4>
+                  <p class="text-sm text-gray-600">Bookings can be cancelled only by the admin.</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                <div>
+                  <h4 class="font-medium text-gray-800">Room Access</h4>
+                  <p class="text-sm text-gray-600">Use your booking confirmation code to access the room during your scheduled time.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const calendarEl = document.getElementById("calendar");
+    const legendEl = document.getElementById("calendar-legend");
+    const bookingForm = document.getElementById("bookingForm");
+    const room_select = document.getElementById("id_room");
+  
+    const formSelects = document.querySelectorAll("select");
+    formSelects.forEach(select => {
+      select.classList.add("block", "w-full", "mt-1", "rounded-md", "border-gray-300", "shadow-sm", "focus:border-red-500", "focus:ring", "focus:ring-red-200", "focus:ring-opacity-50");
+    });
+    
+    const formInputs = document.querySelectorAll("input[type='datetime-local']");
+    formInputs.forEach(input => {
+      input.classList.add("block", "w-full", "mt-1", "rounded-md", "border-gray-300", "shadow-sm", "focus:border-red-500", "focus:ring", "focus:ring-red-200", "focus:ring-opacity-50");
+    });
+  
+    const roomColors = {
+      "Single Room-1": "#ef4444",  // Red
+      "Single Room-2": "#f97316", // Orange
+      "Double Room-1": "#22c55e", // Green
+      "Double Room-2": "#3b82f6", // Blue
+      "Family Suite": "#a855f7"   // Purple
+    };
+  
+    const createRoomLegend = () => {
+      legendEl.innerHTML = '';
+      const legendContainer = document.createElement('div');
+      legendContainer.className = 'flex flex-wrap gap-3 mb-2';
+      
+      Object.entries(roomColors).forEach(([roomName, color]) => {
+        const legendItem = document.createElement('div');
+        legendItem.className = 'flex items-center gap-2 bg-gray-50 px-3 py-1 rounded-full shadow-sm';
+        
+        const colorBox = document.createElement('div');
+        colorBox.className = 'w-3 h-3 rounded-full';
+        colorBox.style.backgroundColor = color;
+        
+        const roomLabel = document.createElement('span');
+        roomLabel.className = 'text-sm text-gray-700';
+        roomLabel.textContent = roomName;
+        
+        legendItem.appendChild(colorBox);
+        legendItem.appendChild(roomLabel);
+        legendContainer.appendChild(legendItem);
+      });
+      
+      legendEl.appendChild(legendContainer);
+    };
+    
+    // Call function to create legend
+    createRoomLegend();
+  
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: "dayGridMonth",
+      headerToolbar: false,
+      events: "/get-bookings/",
+      eventContent: function(arg) {
+        return { html: `<div class="p-1 text-xs text-white font-medium">${arg.event.title}</div>` };
+      },
+      eventDidMount: function(info) {
+        // Add tooltip styling
+        info.el.setAttribute('title', info.event.title);
+        info.el.classList.add('hover:opacity-80', 'transition-opacity');
+        
+        // Apply correct color based on room name in the event title
+        for (const [roomName, color] of Object.entries(roomColors)) {
+          if (info.event.title.includes(roomName)) {
+            info.el.style.backgroundColor = color;
+            info.el.style.borderColor = color;
+            break;
+          }
+        }
+      },
+      selectable: true,
+      dayMaxEvents: true,
+      height: 'auto',
+      eventTimeFormat: {
+        hour: '2-digit',
+        minute: '2-digit',
+        meridiem: 'short'
+      },
+      eventClick: function(info) {
+        Toastify({
+          text: `${info.event.title}`,
+          duration: 3000,
+          gravity: "top",
+          position: "center",
+          backgroundColor: "#3b82f6",
+          className: "rounded-lg shadow-lg",
+        }).showToast();
+      },
+      dayCellDidMount: function(info) {
+        // Add subtle styling to today's cell
+        if (info.isPast) {
+          info.el.classList.add('bg-gray-50', 'opacity-80');
+        }
+      }
+    });
+  
+    calendar.render();
+  
+    document.getElementById("todayBtn").addEventListener("click", function() {
+      calendar.today();
+    });
+  
+    document.getElementById("prevMonthBtn").addEventListener("click", function() {
+      calendar.prev();
+    });
+  
+    document.getElementById("nextMonthBtn").addEventListener("click", function() {
+      calendar.next();
+    });
+  
+    // Add visual feedback when room is selected
+    if (room_select) {
+      room_select.addEventListener('change', function() {
+        const selectedRoom = this.value;
+        const color = roomColors[selectedRoom] || "#ef4444";
+        
+        // Add subtle visual cue to form when room is selected
+        this.style.borderColor = color;
+        this.style.boxShadow = `0 0 0 1px ${color}`;
+        
+        // Enhance submit button with selected room color
+        const submitBtn = document.getElementById("submitBooking");
+        submitBtn.className = "w-full flex justify-center items-center px-4 py-3 text-white rounded-lg shadow-lg transition-all font-medium";
+        submitBtn.style.backgroundColor = color;
+        submitBtn.style.boxShadow = `0 4px 6px -1px ${color}33, 0 2px 4px -1px ${color}22`;
+      });
+    }
+  
+    // Add date-time validation
+    const startTimeInput = document.getElementById("id_start_time");
+    const endTimeInput = document.getElementById("id_end_time");
+    
+    if (startTimeInput && endTimeInput) {
+      startTimeInput.addEventListener('change', function() {
+        const startDate = new Date(this.value);
+        const endDate = new Date(endTimeInput.value);
+        
+        if (endTimeInput.value && startDate >= endDate) {
+          // Auto-adjust end time to be 1 hour after start time
+          const newEndDate = new Date(startDate);
+          newEndDate.setHours(startDate.getHours() + 1);
+          
+          const formattedEndDate = newEndDate.toISOString().slice(0, 16);
+          endTimeInput.value = formattedEndDate;
+          
+          // Show a helpful toast
+          Toastify({
+            text: "End time automatically adjusted to 1 hour after start time",
+            duration: 3000,
+            gravity: "top",
+            position: "center",
+            backgroundColor: "#3b82f6",
+            className: "rounded-lg shadow-lg",
+          }).showToast();
+        }
+      });
+    }
+  
+    bookingForm.addEventListener("submit", async function (e) {
+      e.preventDefault();
+  
+      const submitBtn = document.getElementById("submitBooking");
+      const originalButtonHtml = submitBtn.innerHTML;
+      submitBtn.innerHTML = `<svg class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg> Checking...`;
+      submitBtn.disabled = true;
+  
+      const room = document.getElementById("id_room").value;
+      const startTime = document.getElementById("id_start_time").value;
+      const endTime = document.getElementById("id_end_time").value;
+  
+      // Basic validation
+      if (!room || !startTime || !endTime) {
+        Toastify({ 
+          text: "Please fill out all fields", 
+          duration: 4000, 
+          backgroundColor: "#ef4444",
+          className: "rounded-lg shadow-lg",
+        }).showToast();
+        
+        submitBtn.innerHTML = originalButtonHtml;
+        submitBtn.disabled = false;
+        return;
+      }
+  
+      try {
+        const response = await fetch('/check-availability/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value },
+          body: JSON.stringify({ room, start_time: startTime, end_time: endTime }),
+        });
+  
+        const data = await response.json();
+        if (!data.available) {
+          Toastify({ 
+            text: "Room already booked for the selected time.", 
+            duration: 4000, 
+            backgroundColor: "#ef4444",
+            className: "rounded-lg shadow-lg",
+          }).showToast();
+          
+          submitBtn.innerHTML = originalButtonHtml;
+          submitBtn.disabled = false;
+          return;
+        }
+  
+        this.submit();
+      } catch (error) {
+        Toastify({ 
+          text: "Error checking availability. Please try again.", 
+          duration: 4000, 
+          backgroundColor: "#ef4444",
+          className: "rounded-lg shadow-lg",
+        }).showToast();
+        
+        submitBtn.innerHTML = originalButtonHtml;
+        submitBtn.disabled = false;
+      }
+    });
+  });
+  
+</script>
+{% endblock %}

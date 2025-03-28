@@ -1,0 +1,149 @@
+{% extends "website/sidebar.html" %}
+
+{% block title %}
+<title>Leave Approval</title>
+{% endblock title %}
+
+{% block content %}
+<div class="container mx-auto p-6 max-w-6xl">
+    <h2 class="text-3xl font-bold text-red-800 mb-6">Leave Approval</h2>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Employee Information Card -->
+        <div class="lg:col-span-1">
+            <div class="bg-white shadow-lg rounded-lg border border-gray-200 overflow-hidden">
+                <div class="bg-red-700 text-white py-4 px-6">
+                    <h3 class="text-xl font-medium">Employee Details</h3>
+                </div>
+                
+                <div class="p-6">
+                    <div class="flex items-center mb-6">
+                        <div class="h-20 w-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 text-2xl font-bold">
+                            {{ leave.user.first_name|slice:":1" }}{{ leave.user.last_name|slice:":1" }}
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-xl font-semibold text-gray-800">{{ leave.user.first_name }} {{ leave.user.last_name }}</h4>
+                            <p class="text-gray-500">{{ leave.user.email }}</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between border-b border-gray-200 pb-2">
+                            <span class="font-medium text-gray-600">Department:</span>
+                            <span>{{ leave.user.department|default:"Not Specified" }}</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-200 pb-2">
+                            <span class="font-medium text-gray-600">Position:</span>
+                            <span>{{ leave.user.position|default:"Not Specified" }}</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-200 pb-2">
+                            <span class="font-medium text-gray-600">Manager:</span>
+                            <span>{{ leave.user.manager|default:"Not Assigned" }}</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-200 pb-2">
+                            <span class="font-medium text-gray-600">Submitted:</span>
+                            <span>{{ leave.created_at|date:"M d, Y" }}</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-200 pb-2">
+                            <span class="font-medium text-gray-600">Status:</span>
+                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                {% if leave.status == 'Approved' %}
+                                    bg-green-100 text-green-800
+                                {% elif leave.status == 'Rejected' %}
+                                    bg-red-100 text-red-800
+                                {% else %}
+                                    bg-yellow-100 text-yellow-800
+                                {% endif %}">
+                                {{ leave.status }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Approval and Feedback Section -->
+        <div class="lg:col-span-2">
+            <div class="bg-white shadow-lg rounded-lg border border-gray-200 overflow-hidden">
+                <div class="bg-red-700 text-white py-4 px-6">
+                    <h3 class="text-xl font-medium">Leave Review</h3>
+                    <p class="text-red-100">Review leave request and provide your decision</p>
+                </div>
+
+                <div class="p-6">
+                    <div class="space-y-2">
+                        <h4 class="font-semibold text-gray-700">Start Date:</h4>
+                        <div class="p-3 bg-gray-50 rounded-lg">{{ leave.start_date }}</div>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <h4 class="font-semibold text-gray-700">End Date:</h4>
+                        <div class="p-3 bg-gray-50 rounded-lg">{{ leave.end_date }}</div>
+                    </div>
+                    <div class="space-y-2 mb-4">
+                        <h4 class="font-semibold text-gray-700">Reason for Leave</h4>
+                        <div class="p-3 bg-gray-50 rounded-lg">{{ leave.reason }}</div>
+                    </div>
+                </div>
+
+                <!-- Manager Approval Form -->
+                <div class="p-6">
+                    <form method="POST" action="{% url 'process_leave' leave.id %}">
+                        {% csrf_token %}
+                        
+                        {% if request.user.role == "Manager" or request.user.is_superuser %}
+                        <div class="mb-6">
+                            <h4 class="font-semibold text-lg text-gray-800 mb-4">Manager Approval</h4>
+                            <div class="flex items-center space-x-4">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="manager_approved" value="true" class="form-radio h-5 w-5 text-red-600">
+                                    <span class="ml-2 text-gray-700">Approve</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="manager_approved" value="false" class="form-radio h-5 w-5 text-red-600">
+                                    <span class="ml-2 text-gray-700">Reject</span>
+                                </label>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="flex justify-end">
+                            <button type="submit" class="bg-red-700 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-800 transition duration-200 shadow-md">
+                                Submit Decision
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+    function showTab(tabName) {
+        // Hide all tab contents
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.add('hidden');
+        });
+
+        // Reset tab button styles
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.classList.remove('text-red-600', 'border-red-500', 'active-tab');
+            button.classList.add('text-gray-500', 'border-transparent');
+        });
+
+        // Show the selected tab content
+        document.getElementById('content-' + tabName).classList.remove('hidden');
+
+        // Highlight the selected tab button
+        document.getElementById('tab-' + tabName).classList.remove('text-gray-500', 'border-transparent');
+        document.getElementById('tab-' + tabName).classList.add('text-red-600', 'border-red-500', 'active-tab');
+    }
+
+    // Ensure default tab is visible on page load
+    document.addEventListener("DOMContentLoaded", function () {
+        showTab('feedback');  // Default to Leave Details tab
+    });
+</script>
+{% endblock %}

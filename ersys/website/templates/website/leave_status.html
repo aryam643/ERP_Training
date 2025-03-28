@@ -1,0 +1,108 @@
+{% extends 'website/sidebar.html' %}
+
+{% block title %}
+<title>Leave Status</title>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-10xl">
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <!-- Header Section -->
+        <div class="bg-gradient-to-r from-red-700 to-red-800 px-6 py-4">
+            <h2 class="text-2xl font-bold text-white">Leave Applications</h2>
+            <p class="text-red-100 text-sm mt-1">Track and manage employee leave application requests</p>
+        </div>
+        
+        <!-- Table Section -->
+        <div class="overflow-x-auto container mx-auto mt-12">
+            {% if leaves %}
+            <table class="w-full border-collapse">
+                <thead>
+                    <tr class="bg-gray-100 border-b border-gray-200">
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">S.No.</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Employee</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Submitted</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Reason</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">From</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">To</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Review Leave</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for leave in leaves %}
+                    <tr class="hover:bg-gray-50 transition duration-150">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ forloop.counter }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="h-10 w-10 flex-shrink-0 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                                    {{ leave.user.first_name|slice:":1" }}{{ leave.user.last_name|slice:":1" }}
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">{{leave.user.first_name}} {{leave.user.last_name}}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ leave.created_at|date:"M d, Y" }}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
+                            {{ leave.reason }}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
+                            {{ leave.start_date }}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
+                            {{ leave.end_date }}
+                        </td>
+
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                {% if leave.status == 'Approved' %}
+                                    bg-green-100 text-green-800
+                                {% elif leave.status == 'Rejected' %}
+                                    bg-red-100 text-red-800
+                                {% else %}
+                                    bg-yellow-100 text-yellow-800
+                                {% endif %}">
+                                {{ leave.status }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                {% if leave.status == 'Approved' %}
+                                    <span class="px-3 py-1 inline-flex items-center text-xs rounded-md bg-green-50 text-green-700">
+                                        <svg class="mr-1.5 h-2 w-2 text-green-500" fill="currentColor" viewBox="0 0 8 8">
+                                            <circle cx="4" cy="4" r="3" />
+                                        </svg>
+                                        Done
+                                    </span>
+                                {% else %}
+                                    <a href="{% url 'process_leave' leave.id %}" 
+                                    class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                        Review
+                                    </a>
+                                {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="py-24 text-center">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">No leaves</h3>
+                <p class="mt-1 text-sm text-gray-500">No leave requests have been submitted yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function confirmDelete() {
+        return confirm("Are you sure you want to delete this leave request? This action cannot be undone.");
+    }
+</script>
+{% endblock %}

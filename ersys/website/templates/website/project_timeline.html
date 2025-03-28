@@ -1,0 +1,137 @@
+{% extends "website/sidebar.html" %}
+
+{% block title %}
+<title>Project Calendar</title>
+{% endblock %}
+
+{% block content %}
+
+<!-- FullCalendar Library -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    var calendarEl = document.getElementById("calendar");
+
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: "dayGridMonth",
+        themeSystem: "standard",
+        height: 'auto',
+        aspectRatio: 1.5,
+        headerToolbar: {
+            left: "prev,next today",
+            center: "title",
+            right: "dayGridMonth,timeGridWeek,timeGridDay"
+        },
+        events: "/project_events",
+        eventClick: function(info) {
+            alert("📌 Project: " + info.event.title + 
+                  "\n📄 Description: " + (info.event.extendedProps.description || "No description"));
+        }
+    });
+
+    calendar.render();
+});
+</script>
+
+<div class="flex flex-col min-h-screen bg-gradient-to-b from-neutral-900 to-neutral-800 p-8">
+    <div class="w-full mx-auto space-y-8">
+        
+        <!--  Heaer -->
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-4xl font-extrabold text-white">
+                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-red-400 via-red-500 to-red-600">
+                        Project Timeline
+                    </span>
+                </h1>
+                <p class="text-neutral-400 mt-1 text-sm">Keep track of your project schedules and deadlines.</p>
+            </div>
+            <a href="{% url 'project_list' %}" 
+               class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg transition-all flex items-center gap-2 shadow-lg hover:shadow-blue-500/30 text-sm font-medium">
+                📋 View Projects
+            </a>
+        </div>
+
+        <!-- 📅 Calendar + Project List Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Calendar Section -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-xl transition-all hover:shadow-2xl p-6">
+                    <div id="calendar"></div>
+                </div>
+            </div>
+
+            <!-- 🛠️ Ongoing Projects Section -->
+            <div class="space-y-6">
+                <div class="bg-white rounded-xl shadow-xl transition-all hover:shadow-2xl h-[600px] flex flex-col">
+                    <div class="px-6 py-4 bg-gradient-to-r from-red-50 to-red-100 border-b rounded-t-xl">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-semibold text-gray-800">Ongoing Projects</h3>
+                            <span id="bookingCount" class="px-3 py-1 text-sm text-red-600 bg-red-100 rounded-full"></span>
+                        </div>
+                    </div>
+
+                    <!-- Project List -->
+                    <div class="p-6 flex-grow overflow-y-auto bg-white/10 backdrop-blur-md rounded-xl">
+                        <div id="projectList" class="grid grid-cols-1 space-y-4">
+
+                            {% if projects %}
+                                {% for project in projects %}
+                                    <div class="bg-white/10 backdrop-blur-md rounded-xl shadow-lg border border-white/20 p-6 transition-all hover:shadow-2xl flex items-center space-x-6">
+
+                                        <!-- Status Indicator -->
+                                        <span class="px-4 py-2 text-sm font-semibold rounded-full whitespace-nowrap
+                                            {% if project.status == 'Completed' %} bg-green-500/20 text-green-700
+                                            {% elif project.status == 'In Progress' %} bg-yellow-500/20 text-yellow-700
+                                            {% else %} bg-gray-500/20 text-gray-400 {% endif %}">
+                                            {{ project.status }}
+                                        </span>
+
+                                        <div class="flex-grow">
+                                            <!-- Project Name -->
+                                            <h3 class="text-xl font-semibold text-red-500">
+                                                <a href="{% url 'proj_des' project_id=project.id %}" class="hover:underline">
+                                                    {{ project.project_name }}
+                                                </a>
+                                            </h3>
+
+                                            <!-- Shortened Description -->
+                                            <p class="text-sm text-neutral-700 max-w-2xl">
+                                                {% with project.proj_des.split|slice:":10"|join:" " as short_desc %}
+                                                    {{ short_desc }}{% if project.proj_des|wordcount > 10 %}...{% endif %}
+                                                {% endwith %}
+                                            </p>
+
+                                            <!-- Dates & Manager -->
+                                            <div class="flex justify-between items-center text-sm text-neutral-900 mt-2">
+                                                <p>
+                                                    📅 <strong>Start:</strong> {{ project.start_date }} | 
+                                                    <strong>End:</strong> {{ project.end_date }}
+                                                </p>
+                                                <p class="ml-2 text-right">
+                                                    🏷 <strong>Manager:</strong> {{ project.manager }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <!-- No Projects Assigned -->
+                                <div class="col-span-full text-center text-neutral-400">
+                                    🚧 No projects assigned yet.
+                                </div>
+                            {% endif %}
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div> <!-- End of Grid -->
+    </div>
+</div>
+
+{% endblock %}
