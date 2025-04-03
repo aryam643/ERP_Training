@@ -51,6 +51,7 @@ class ProjectForm(forms.ModelForm):
             "end_date": forms.DateInput(attrs={"type": "date"}),
         }
 
+
 class UserUpdateForm(forms.ModelForm):
     class Meta:
         model = User

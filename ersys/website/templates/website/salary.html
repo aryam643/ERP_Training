@@ -1,0 +1,76 @@
+{% extends "website/sidebar.html" %}
+
+{% block title %}
+<title>Salary Approval</title>
+{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 text-white py-10 px-6">
+    
+    {% for message in messages %}
+    <p class="container mx-auto mt-4 text-center mb-4 py-3 px-4 bg-red-500 text-white shadow-md rounded-lg">
+        {{ message }}
+    </p>
+    {% endfor %}
+
+    <!-- Header -->
+    <div class="text-center mb-8 space-y-4">
+        <h2 class="text-4xl font-extrabold tracking-tight">
+            <span class="bg-clip-text text-transparent bg-gradient-to-r from-red-400 via-red-500 to-red-600">
+                Approve Salaries
+            </span>
+        </h2>
+        <p class="text-neutral-400 text-base max-w-xl mx-auto">
+            Select salaries and approve them in bulk.
+        </p>
+    </div>
+
+    <form method="POST" action="{% url 'approve_salaries' %}">
+        {% csrf_token %}
+        <div class="overflow-x-auto bg-neutral-800 shadow-xl rounded-lg">
+            <table class="w-full border-collapse">
+                <thead>
+                    <tr class="bg-red-700 text-white text-sm uppercase">
+                        <th class="px-4 py-3"><input type="checkbox" id="selectAll"></th>
+                        <th class="px-4 py-2">Employee</th>
+                        <th class="px-4 py-2">Month</th>
+                        <th class="px-4 py-2">Net Salary</th>
+                        <th class="px-4 py-2">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-neutral-700">
+                    {% for salary in salaries %}
+                    <tr class="hover:bg-neutral-700 transition-all text-center text-neutral-300 text-sm">
+                        <td class="px-4 py-3">
+                            {% if salary.status == "Pending" %}
+                                <input type="checkbox" name="salary_ids" value="{{ salary.id }}">
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-2">{{ salary.user.username }}</td>
+                        <td class="px-4 py-2">{{ salary.created_at|date:"F Y" }}</td>
+                        <td class="px-4 py-2 text-green-500">₹{{ salary.amount }}</td>
+                        <td class="px-4 py-2 {% if salary.status == 'Approved' %}text-green-500{% else %}text-red-500{% endif %}">
+                            {{ salary.status }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="text-center mt-6">
+            <button type="submit" class="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-md text-white font-semibold shadow-md">
+                Approve Selected Salaries
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.getElementById("selectAll").addEventListener("change", function() {
+        let checkboxes = document.querySelectorAll("input[name='salary_ids']");
+        checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+    });
+</script>
+
+{% endblock %}

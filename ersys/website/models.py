@@ -2,6 +2,8 @@ from django.contrib.auth.hashers import make_password, check_password
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, PermissionsMixin, AbstractBaseUser
 from django.utils.timezone import now
+from django.utils import timezone
+
 
 
 # Custom Manager for User Model
@@ -223,3 +225,34 @@ class Leave(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.status}"
+    
+class Finance(models.Model):
+    user=models.ForeignKey(User,on_delete=models.CASCADE)
+    amount=models.DecimalField(max_digits=10,decimal_places=2)
+    description=models.TextField()
+    STATUS_CHOICES=[
+        ('Paid','Paid'),
+        ('Unpaid','Unpaid'),
+
+    ]
+    status=models.CharField(max_length=20,choices=STATUS_CHOICES,default='Unpaid')
+    created_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)
+
+    # Salary-related fields
+    basic_salary = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    allowances = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    deductions = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    tax_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=10.00)  # Default 10% tax
+
+    def calculate_salary(self):
+        tax_amount = (self.basic_salary * self.tax_percentage) / 100
+        return self.basic_salary + self.allowances - self.deductions - tax_amount
+
+    def save(self, *args, **kwargs):
+        salary_date = self.created_at if self.created_at else timezone.now()
+        self.description = f"Salary for {salary_date.strftime('%B %Y')}"
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.amount} ({self.status})"

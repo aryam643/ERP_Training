@@ -1,0 +1,241 @@
+{% extends "website/sidebar.html" %}
+
+{% block title %}
+<title>Add Salary</title>
+{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 text-white py-10 px-6">
+    <div class="container mx-auto max-w-4xl">
+        <!-- Notification Messages -->
+        {% for message in messages %}
+        <div class="mb-6 animate-fadeIn">
+            <div class="py-3 px-4 bg-green-500 text-white shadow-lg rounded-lg flex items-center justify-between">
+                <span class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    {{ message }}
+                </span>
+                <button class="focus:outline-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hover:text-green-200" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Page Header with Navigation -->
+        <div class="mb-8">
+            <div class="flex items-center mb-2">
+                <a href="{% url 'finance' %}" class="text-neutral-400 hover:text-white transition-colors">
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                        </svg>
+                        <span>Back to Salary Records</span>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="text-center mb-6 space-y-4">
+                <h2 class="text-4xl font-extrabold tracking-tight">
+                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-red-400 via-red-500 to-red-600">
+                        Add Salary Record
+                    </span>
+                </h2>
+                <p class="text-neutral-400 text-base max-w-xl mx-auto">
+                    Create a new salary record for an employee with automatic calculation of taxes and deductions.
+                </p>
+            </div>
+        </div>
+
+        <!-- Main Form Card -->
+        <div class="bg-neutral-800 rounded-xl shadow-xl border border-neutral-700 overflow-hidden">
+            <div class="flex border-b border-neutral-700">
+                <div class="w-full py-3 px-4 flex items-center justify-center bg-red-600 text-white font-medium">
+                    <span class="items-center justify-center mr-2 text-sm font-bold"></span>
+                    <span class="text-medium font-bold">Employee</span>
+                </div>
+            </div>
+
+            <!-- Form Content -->
+            <form method="POST" class="p-6">
+                {% csrf_token %}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Employee Selection Section -->
+                    <div class="md:col-span-2 mb-4">
+                        <label for="user" class="block text-sm font-medium text-neutral-300 mb-2">Select Employee:</label>
+                        <div class="relative">
+                            <select name="user" id="user" required class="w-full p-3 pl-10 rounded-lg border border-neutral-600 bg-neutral-700 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 appearance-none">
+                                <option value="">-- Select Employee --</option>
+                                {% for employee in employees %}
+                                    <option value="{{ employee.id }}">{{ employee.username }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-neutral-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-neutral-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </div>
+                        <p class="mt-1 text-xs text-neutral-400">Employee details will automatically populate when selected</p>
+                    </div>
+                    
+
+                    <!-- Left Column - Salary Components -->
+                    <div>
+                        <div class="mb-6">
+                            <div class="flex justify-between mb-2">
+                                <label class="block text-sm font-medium text-neutral-300">Basic Salary:</label>
+                                <span class="text-xs text-neutral-400">Auto-filled</span>
+                                
+                            </div>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-neutral-400">₹</span>
+                                </div>
+                                <input type="number" id="basic_salary" name="basic_salary" required class="w-full p-3 pl-8 rounded-lg border border-neutral-600 bg-neutral-700 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500" readonly>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <div class="flex justify-between mb-2">
+                                <label class="block text-sm font-medium text-neutral-300">Allowances:</label>
+                                <span class="text-xs text-neutral-400">Auto-filled</span>
+                            </div>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-neutral-400">₹</span>
+                                </div>
+                                <input type="number" id="allowances" name="allowances" required class="w-full p-3 pl-8 rounded-lg border border-neutral-600 bg-neutral-700 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500" readonly>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column - Deduction Components -->
+                    <div>
+                        <div class="mb-6">
+                            <div class="flex justify-between mb-2">
+                                <label class="block text-sm font-medium text-neutral-300">Deductions:</label>
+                                <span class="text-xs text-neutral-400">Auto-filled</span>
+                            </div>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-neutral-400">₹</span>
+                                </div>
+                                <input type="number" id="deductions" name="deductions" required class="w-full p-3 pl-8 rounded-lg border border-neutral-600 bg-neutral-700 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500" readonly>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <div class="flex justify-between mb-2">
+                                <label class="block text-sm font-medium text-neutral-300">Tax Percentage:</label>
+                                <span class="text-xs text-neutral-400">Auto-filled</span>
+                            </div>
+                            <div class="relative">
+                                <input type="number" id="tax_percentage" name="tax_percentage" required class="w-full p-3 pr-8 rounded-lg border border-neutral-600 bg-neutral-700 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500" readonly>
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <span class="text-neutral-400">%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Calculated Net Salary (appears when employee is selected) -->
+                    <div id="calculatedSalaryPanel" class="md:col-span-2 mb-6 hidden">
+                        <div class="bg-neutral-900 rounded-lg p-6 border border-neutral-700">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="font-medium text-lg text-white">Calculated Net Salary</h3>
+                                <span class="text-xs text-neutral-400">For current month</span>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <p class="text-sm text-neutral-400">Gross Salary</p>
+                                    <p class="text-lg font-medium text-white" id="grossAmount">₹ 0.00</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-neutral-400">Total Deductions</p>
+                                    <p class="text-lg font-medium text-white" id="totalDeductions">₹ 0.00</p>
+                                </div>
+                            </div>
+                            
+                            <div class="border-t border-neutral-700 pt-4">
+                                <div class="flex justify-between items-center">
+                                    <p class="text-lg font-semibold">Net Amount</p>
+                                    <p class="text-2xl font-bold text-green-500" id="netAmount">₹ 0.00</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Payment Status -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-neutral-300 mb-2">Payment Status:</label>
+                        <div class="flex space-x-4">
+                            <label class="relative flex items-center bg-neutral-700 p-3 rounded-lg border border-neutral-600 cursor-pointer hover:bg-neutral-650 transition-colors flex-1">
+                                <input type="radio" name="status" value="Unpaid" checked class="form-radio h-5 w-5 text-red-600 focus:ring-red-500 border-neutral-500 mr-3">
+                                <div>
+                                    <span class="block font-medium">Unpaid</span>
+                                    <span class="text-xs text-neutral-400">Process payment later</span>
+                                </div>
+                            </label>
+                            
+                            <label class="relative flex items-center bg-neutral-700 p-3 rounded-lg border border-neutral-600 cursor-pointer hover:bg-neutral-650 transition-colors flex-1">
+                                <input type="radio" name="status" value="Paid" class="form-radio h-5 w-5 text-red-600 focus:ring-red-500 border-neutral-500 mr-3">
+                                <div>
+                                    <span class="block font-medium">Paid</span>
+                                    <span class="text-xs text-neutral-400">Mark as already paid</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Form Actions -->
+                <div class="mt-8 flex justify-between">
+                    <a href="{% url 'finance' %}" class="px-6 py-3 border border-neutral-600 text-white rounded-lg hover:bg-neutral-700 transition-colors">
+                        Cancel
+                    </a>
+                    <button type="submit" class="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-lg font-semibold shadow-lg transition-all flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        Create Salary Record
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced AJAX Script to Auto-fill Salary Fields -->
+<script>
+document.getElementById("user").addEventListener("change", function() {
+    let userId = this.value;
+    if (userId) {
+        fetch(`/get-salary-details/?user_id=${userId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (!data.error) {
+                    document.getElementById("basic_salary").value = data.basic_salary;
+                    document.getElementById("allowances").value = data.allowances;
+                    document.getElementById("deductions").value = data.deductions;
+                    document.getElementById("tax_percentage").value = data.tax_percentage;
+                }
+            })
+            .catch(error => console.error("Error fetching salary details:", error));
+    }
+});
+</script>
+
+{% endblock %}

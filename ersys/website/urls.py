@@ -41,8 +41,6 @@ urlpatterns = [
     path('send_mail',views.send_django_mail,name='send_mail'),
     path('send_email_success/', views.send_email_success, name='send_email_success'),
 
-
-
     #room_booking
     path("book/", views.book_room, name="book_room"),
     path("my-bookings/", views.booking_list, name="booking_list"),
@@ -66,6 +64,16 @@ urlpatterns = [
     path('leave/status/',views.leave_status,name='leave_status'),
     path('leave/manager', views.manager_approval, name='manager_review_resignation'),
     path('leave/status/approval/<int:leave_id>/', views.process_leave, name='process_leave'),
+
+
+    #finance
+    path('finance/',views.finance,name='finance'),
+    path("add-salary/", views.add_salary, name="add_salary"),
+    path("get-salary-details/", views.get_salary_details, name="get_salary_details"),
+    path("finance/export/", views.export_salaries, name="export_salaries"),
+
+
+
 
     
 ]

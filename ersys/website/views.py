@@ -22,6 +22,89 @@ from datetime import datetime
 from django.views.decorators.csrf import csrf_exempt
 
 
+def finance(request):
+    salaries = Finance.objects.filter(description__startswith="Salary").order_by("-created_at")
+    search_query = request.GET.get("search", "").strip()
+    month_filter = request.GET.get("month", "")
+    status_filter = request.GET.get("status", "")
+
+    if search_query:
+        salaries = salaries.filter(user__username__icontains=search_query)
+
+    if month_filter:
+        salaries = salaries.filter(created_at__month=timezone.datetime.strptime(month_filter, "%B %Y").month)
+
+    if status_filter and status_filter != "All Status":
+        salaries = salaries.filter(status=status_filter)
+
+    return render(request, "website/finance.html", {"salaries": salaries})
+
+def export_salaries(request):
+    salaries = Finance.objects.filter(description__startswith="Salary").order_by("-created_at")
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="salaries.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(["Employee", "Month", "Net Salary", "Status"])
+
+    for salary in salaries:
+        writer.writerow([salary.user.username, salary.created_at.strftime("%B %Y"), salary.amount, salary.status])
+
+    return response
+
+SALARY_CONFIG = {
+    "Employee": {"basic_salary": 30000, "allowances": 3000, "deductions": 1000, "tax_percentage": 10.0},
+    "Manager": {"basic_salary": 70000, "allowances": 5000, "deductions": 2000, "tax_percentage": 15.0},
+    "HR": {"basic_salary": 40000, "allowances": 4000, "deductions": 3000, "tax_percentage": 20.0},
+    "Other": {"basic_salary": 20000, "allowances": 6000, "deductions": 500, "tax_percentage": 5.0},
+}
+
+# Fetch predefined salary based on user role (for AJAX)
+def get_salary_details(request):
+    user_id = request.GET.get("user_id")
+    try:
+        user = User.objects.get(id=user_id)
+        role = getattr(user, "role", "Other")  # Default to "Other" if role doesn't exist
+        return JsonResponse(SALARY_CONFIG.get(role, SALARY_CONFIG["Other"]))
+    except User.DoesNotExist:
+        return JsonResponse({"error": "User not found"}, status=404)
+
+# Salary Entry View
+def add_salary(request):
+    if request.method == "POST":
+        user_id = request.POST.get("user")
+        status = request.POST.get("status", "Unpaid")
+
+        try:
+            user = User.objects.get(id=user_id)
+            role = getattr(user, "role", "Other")
+            salary_details = SALARY_CONFIG.get(role, SALARY_CONFIG["Other"])
+
+            # Calculate net salary
+            tax_amount = (salary_details["basic_salary"] * salary_details["tax_percentage"]) / 100
+            net_salary = salary_details["basic_salary"] + salary_details["allowances"] - salary_details["deductions"] - tax_amount
+
+            # Create salary entry
+            Finance.objects.create(
+                user=user,
+                amount=net_salary,
+                basic_salary=salary_details["basic_salary"],
+                allowances=salary_details["allowances"],
+                deductions=salary_details["deductions"],
+                tax_percentage=salary_details["tax_percentage"],
+                status=status,
+                created_at=timezone.now()
+            )
+
+            messages.success(request, f"Salary for {user.username} added successfully!")
+        except User.DoesNotExist:
+            messages.error(request, "Invalid user selected.")
+
+        return redirect('/finance/')  # Redirect to the finance page
+
+    employees = User.objects.all()
+    return render(request, 'website/add_Salary.html', {'employees': employees})
 
 # User Authentication
 def project_timeline(request):

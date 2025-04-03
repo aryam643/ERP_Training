@@ -1,0 +1,157 @@
+{% extends "website/sidebar.html" %}
+
+{% block title %}
+<title>Finance - Salary Management</title>
+{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 text-white py-10 px-6">
+    <div class="container mx-auto max-w-6xl">
+        <!-- Notification Messages -->
+        {% for message in messages %}
+        <div class="mb-6 animate-fadeIn">
+            <div class="py-3 px-4 bg-green-500 text-white shadow-lg rounded-lg flex items-center justify-between">
+                <span class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    {{ message }}
+                </span>
+                <button class="focus:outline-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hover:text-green-200" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Page Header -->
+        <div class="mb-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h2 class="text-4xl font-extrabold tracking-tight">
+                        <span class="bg-clip-text text-transparent bg-gradient-to-r from-red-400 via-red-500 to-red-600">
+                            Salary Records
+                        </span>
+                    </h2>
+                    <p class="mt-2 text-neutral-400">Manage and track employee salary payments</p>
+                </div>
+                
+                <div class="mt-4 md:mt-0 flex space-x-3">
+                    <a href="{% url 'export_salaries' %}" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg flex items-center transition-colors shadow-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                        Export
+                    </a>
+
+                    <a href="{% url 'add_salary' %}" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg flex items-center transition-colors shadow-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        New Entry
+                    </a>
+                </div>
+            </div>
+                        <!-- Filter & Search Bar -->
+
+            <form method="GET" class="mt-6 flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-3">
+                <div class="relative flex-grow">
+                    <input type="text" name="search" value="{{ request.GET.search }}" class="bg-neutral-700 text-white rounded-lg block w-full pl-10 pr-4 py-2 border border-neutral-600 focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none" placeholder="Search by employee name...">
+                </div>
+            
+                <select name="month" class="bg-neutral-700 text-white rounded-lg px-4 py-2 border border-neutral-600 focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none">
+                    <option value="">All Months</option>
+                    <option value="January 2025" {% if request.GET.month == "January 2025" %}selected{% endif %}>January 2025</option>
+                    <option value="February 2025" {% if request.GET.month == "February 2025" %}selected{% endif %}>February 2025</option>
+                    <option value="March 2025" {% if request.GET.month == "March 2025" %}selected{% endif %}>March 2025</option>
+                </select>
+            
+                <select name="status" class="bg-neutral-700 text-white rounded-lg px-4 py-2 border border-neutral-600 focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none">
+                    <option value="All Status">All Status</option>
+                    <option value="Paid" {% if request.GET.status == "Paid" %}selected{% endif %}>Paid</option>
+                    <option value="Pending" {% if request.GET.status == "Pending" %}selected{% endif %}>Pending</option>
+                </select>
+            
+                <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center transition-colors shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                    Filter
+                </button>
+            </form>
+            
+        </div>
+
+        <!-- Salary Table Card -->
+        <div class="bg-neutral-800 shadow-xl rounded-lg border border-neutral-700 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr class="bg-gradient-to-r from-red-700 to-red-800 text-white text-sm uppercase">
+                            <th class="px-6 py-3 text-left">Employee</th>
+                            <th class="px-6 py-3 text-left">Month</th>
+                            <th class="px-6 py-3 text-left">Net Salary</th>
+                            <th class="px-6 py-3 text-left">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-neutral-700">
+                        {% for salary in salaries %}
+                        <tr class="hover:bg-neutral-700 transition-all text-neutral-300 text-sm">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="h-8 w-8 rounded-full bg-neutral-600 flex items-center justify-center mr-3 text-xs font-bold">
+                                        {{ salary.user.username|slice:":2"|upper }}
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-white">{{ salary.user.username }}</div>
+                                        <div class="text-neutral-400 text-xs">ID: #{{ salary.user.id }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ salary.created_at|date:"F Y" }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap font-medium text-green-500">
+                                ₹{{ salary.amount }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if salary.status == 'Paid' %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    Paid
+                                </span>
+                                {% else %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                    Pending
+                                </span>
+                                {% endif %}
+                            </td>
+
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="px-6 py-10 text-center text-neutral-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto mb-2 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <p>No salary records found</p>
+                                <button class="mt-2 px-4 py-2 text-sm bg-red-600 hover:bg-red-700 rounded-lg inline-flex items-center transition-colors shadow-md">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                                    </svg>
+                                    Create First Record
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
