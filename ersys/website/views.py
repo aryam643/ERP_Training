@@ -1,4 +1,7 @@
-
+from django.shortcuts import get_object_or_404
+from django.http import FileResponse, Http404
+from .models import Reimbursement  # adjust the import if model is elsewhere
+import os
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -21,6 +24,114 @@ import requests
 from datetime import datetime
 from django.views.decorators.csrf import csrf_exempt
 
+
+
+def hr_review_reimbursements(request):
+    reimbursements = Reimbursement.objects.all()
+    return render(request, "website/hr_review_re.html", {"reimbursements": reimbursements})
+
+def approve_reimbursement(request, reimbursement_id):
+    reimbursement = get_object_or_404(Reimbursement, id=reimbursement_id)
+    reimbursement.status = "Approved"
+    reimbursement.approved_by_hr = request.user
+    reimbursement.reviewed_at = now()
+    reimbursement.save()
+    
+    # Notify employee via email
+    send_mail(
+        "Reimbursement Approved",
+        f"Your reimbursement request for {reimbursement.amount} has been approved.",
+        "aryamsharma59@gmail.com",
+        [reimbursement.user.email],
+        fail_silently=True,
+    )
+
+    return redirect("hr_review_reimbursements")
+
+
+def reject_reimbursement(request, reimbursement_id):
+    reimbursement = get_object_or_404(Reimbursement, id=reimbursement_id)
+    reimbursement.status = "Rejected"
+    reimbursement.approved_by_hr = request.user
+    reimbursement.reviewed_at = now()
+    reimbursement.save()
+
+    # Notify employee via email
+    send_mail(
+        "Reimbursement Rejected",
+        f"Your reimbursement request for {reimbursement.amount} has been rejected.",
+        "aryamsharma59@gmail.com",
+        [reimbursement.user.email],
+        fail_silently=True,
+    )
+
+    return redirect("hr_review_reimbursements")
+
+def reimbursement(request):
+    employees = User.objects.all()
+
+    if request.method == "POST":
+        print("entering the condition")
+        employee = request.user
+        members_list = request.POST.getlist("members_list[]")
+        date = request.POST.get("date")
+        amount = request.POST.get("amount")
+        description = request.POST.get("description")
+        bill_file = request.FILES.get("bill_file")
+        print("2")
+
+        reimbursement = Reimbursement.objects.create(
+            user=employee,
+            date=date,
+            amount=amount,
+            description=description,
+            bill_file=bill_file,
+            status="Pending",
+        )
+        print("1")
+
+        for member_id in members_list:
+            member = User.objects.get(id=member_id)
+            reimbursement.members_list.add(member)
+
+        reimbursement.save()
+
+        # Email notification to HR
+        hr_users = User.objects.filter(groups__name="HR")
+        hr_emails = [hr.email for hr in hr_users if hr.email]
+
+        if hr_emails:
+            send_mail(
+                "Reimbursement Request for Review",
+                f"A new reimbursement request has been submitted by {employee.username}. Please review it.",
+                "aryamsharma59@gmail.com",
+                hr_emails,
+                fail_silently=True,
+            )
+        print("Email sent to HR")
+
+        messages.success(request, "Reimbursement submitted successfully!")
+        return redirect("reimbursement")
+    reimbursements= Reimbursement.objects.filter(user=request.user)
+
+    return render(request, "website/reimbursement.html", {
+        "employees": employees
+        , "reimbursements": reimbursements
+    })
+
+def view_bill_file(request, reimbursement_id):
+    reimbursement = get_object_or_404(Reimbursement, id=reimbursement_id)
+
+    if not reimbursement.bill_file:
+        raise Http404("Bill file not found.")
+
+    file_path = reimbursement.bill_file.path
+    file_name = os.path.basename(file_path)
+
+    try:
+        return FileResponse(open(file_path, 'rb'), content_type='application/octet-stream', filename=file_name)
+    except FileNotFoundError:
+        raise Http404("File does not exist.")
 
 def finance(request):
     salaries = Finance.objects.filter(description__startswith="Salary").order_by("-created_at")
@@ -105,6 +216,7 @@ def add_salary(request):
 
     employees = User.objects.all()
     return render(request, 'website/add_Salary.html', {'employees': employees})
+
 
 # User Authentication
 def project_timeline(request):

@@ -1,0 +1,464 @@
+{% extends "website/sidebar.html" %}
+
+{% block title %}
+<title>HR - Reimbursement Review</title>
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-col min-h-screen bg-gradient-to-b from-neutral-900 to-neutral-800 p-4 md:p-8">
+    <div class="w-full max-w-6xl mx-auto space-y-6">
+        <!-- Header with stats -->
+        <div class="flex flex-col md:flex-row md:justify-between md:items-center">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-extrabold text-white">
+                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-red-400 via-red-500 to-red-600">
+                        Reimbursement Approvals
+                    </span>
+                <p class="text-neutral-400 mt-1 text-sm">Review and process pending reimbursement requests</p>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="flex flex-wrap gap-4 mt-4 md:mt-0">
+                <div class="bg-neutral-800 rounded-lg p-3 border border-neutral-700 flex items-center gap-3 hover:border-neutral-600 transition-all">
+                    <div class="bg-blue-500 bg-opacity-20 p-2 rounded-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                            <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-xs text-neutral-400">Pending</p>
+                        <p class="text-lg font-bold text-white" id="pending-count">{{ pending_count|default:reimbursements|length }}</p>
+                    </div>
+                </div>
+                
+                <div class="bg-neutral-800 rounded-lg p-3 border border-neutral-700 flex items-center gap-3 hover:border-neutral-600 transition-all">
+                    <div class="bg-green-500 bg-opacity-20 p-2 rounded-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-xs text-neutral-400">Approved</p>
+                        <p class="text-lg font-bold text-white" id="approved-count">{{ approved_count|default:0 }}</p>
+                    </div>
+                </div>
+                
+                <div class="bg-neutral-800 rounded-lg p-3 border border-neutral-700 flex items-center gap-3 hover:border-neutral-600 transition-all">
+                    <div class="bg-red-500 bg-opacity-20 p-2 rounded-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-xs text-neutral-400">Rejected</p>
+                        <p class="text-lg font-bold text-white" id="rejected-count">{{ rejected_count|default:0 }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-neutral-800 rounded-lg border border-neutral-700 p-4 hover:border-neutral-600 transition-all">
+            <div class="flex flex-wrap gap-4 items-end">
+                <div class="flex-1 min-w-64">
+                    <label class="block text-sm font-medium text-neutral-400 mb-1">Search</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                        <input type="text" id="search-input"     aria-label="Search reimbursements"
+                         class="bg-neutral-700 border border-neutral-600 text-white text-sm rounded-lg block w-full pl-10 p-2.5 focus:ring-red-500 focus:border-red-500" placeholder="Search by name or description">
+                    </div>
+                </div>
+                
+                <div class="w-40">
+                    <label class="block text-sm font-medium text-neutral-400 mb-1">Status</label>
+                    <select id="status-filter" class="bg-neutral-700 border border-neutral-600 text-white text-sm rounded-lg block w-full p-2.5 focus:ring-red-500 focus:border-red-500">
+                        <option value="all">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+                
+                <div class="w-40">
+                    <label class="block text-sm font-medium text-neutral-400 mb-1">Sort by</label>
+                    <select id="sort-by" class="bg-neutral-700 border border-neutral-600 text-white text-sm rounded-lg block w-full p-2.5 focus:ring-red-500 focus:border-red-500">
+                        <option value="date-desc">Date ↓</option>
+                        <option value="date-asc">Date ↑</option>
+                        <option value="amount-desc">Amount ↓</option>
+                        <option value="amount-asc">Amount ↑</option>
+                        <option value="name">Name</option>
+                    </select>
+                </div>
+                
+                <button id="apply-filters" class="bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none transition-colors">
+                    Apply Filters
+                </button>
+                
+                <button id="reset-filters" class="bg-neutral-700 hover:bg-neutral-600 text-white font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none transition-colors">
+                    Reset
+                </button>
+            </div>
+        </div>
+
+        <!-- Reimbursement Table -->
+        <div class="bg-neutral-800 rounded-lg border border-neutral-700 overflow-hidden hover:border-neutral-600 transition-all">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                    <thead class="text-xs uppercase bg-neutral-700 text-neutral-300">
+                        <tr>
+                            data-status="{{ reimbursement.status|default_if_none:'pending'|lower }}"
+                            <th scope="col" class="px-6 py-3">Employee</th>
+                            <th scope="col" class="px-6 py-3">Amount</th>
+                            <th scope="col" class="px-6 py-3">Date</th>
+                            <th scope="col" class="px-6 py-3">Description</th>
+                            <th scope="col" class="px-6 py-3">Status</th>
+                            <th scope="col" class="px-6 py-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reimbursement-table-body">
+                        {% for reimbursement in reimbursements %}
+                        <tr id="row-{{ reimbursement.id }}" class="border-b border-neutral-700 hover:bg-neutral-700 transition-all" data-name="{{ reimbursement.user.username|lower }}" data-description="{{ reimbursement.description|lower }}" data-status="{{ reimbursement.status|default:'pending'}}" data-amount="{{ reimbursement.amount }}" data-date="{{ reimbursement.date|date:'Y-m-d' }}">
+                            <td class="px-6 py-4 flex items-center gap-2">
+                                <div class="bg-neutral-600 h-8 w-8 rounded-full flex items-center justify-center font-bold text-white">
+                                    {{ reimbursement.user.username|slice:":1" }}
+                                </div>
+                                <span class="font-medium text-white">{{ reimbursement.user.username }}</span>
+                            </td>
+                            <td class="px-6 py-4 text-white font-bold">₹{{ reimbursement.amount }}</td>
+                            <td class="px-6 py-4 text-white">{{ reimbursement.date }}</td>
+                            <td class="px-6 py-4 text-white max-w-xs truncate">
+                                <div class="flex items-center space-x-2">
+                                    <span title="{{ reimbursement.description }}" class="truncate">{{ reimbursement.description }}</span>
+                                    <a href="{% url 'view_bill' reimbursement.id %}" class="flex-shrink-0 text-blue-400 hover:text-blue-300 group" target="_blank" title="View Bill">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                                        </svg>
+                                    </a>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                {% if reimbursement.status == 'approved' %}
+                                <span id="status-{{ reimbursement.id }}" class="status-badge approved bg-green-500 bg-opacity-20 text-green-400 text-xs font-medium px-3 py-1 rounded-full">
+                                    Approved
+                                </span>
+                                {% elif reimbursement.status == 'rejected' %}
+                                <span id="status-{{ reimbursement.id }}" class="status-badge rejected bg-red-500 bg-opacity-20 text-red-400 text-xs font-medium px-3 py-1 rounded-full">
+                                    Rejected
+                                </span>
+                                {% else %}
+                                <span id="status-{{ reimbursement.id }}" class="status-badge pending bg-blue-500 bg-opacity-20 text-blue-400 text-xs font-medium px-3 py-1 rounded-full">
+                                    Pending
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex space-x-2">
+                                    {% if reimbursement.status == 'approved' %}
+                                    <button disabled class="px-3 py-1 bg-green-600 text-white text-xs font-medium rounded flex items-center gap-1 cursor-default">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        Approved
+                                    </button>
+                                    {% elif reimbursement.status == 'rejected' %}
+                                    <button disabled class="px-3 py-1 bg-red-600 text-white text-xs font-medium rounded flex items-center gap-1 cursor-default">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                        Rejected
+                                    </button>
+                                    {% else %}
+                                    <button 
+                                        onclick="approveReimbursement({{ reimbursement.id }}, '{% url 'approve_reimbursement' reimbursement.id %}')" 
+                                        class="approve-btn px-3 py-1 text-green-400 border border-green-400 hover:bg-green-600 hover:text-white text-xs font-medium rounded flex items-center gap-1 transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        Approve
+                                    </button>
+                                    <button 
+                                        onclick="rejectReimbursement({{ reimbursement.id }}, '{% url 'reject_reimbursement' reimbursement.id %}')"
+                                        class="reject-btn px-3 py-1 text-red-400 border border-red-400 hover:bg-red-600 hover:text-white text-xs font-medium rounded flex items-center gap-1 transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                        Reject
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="px-6 py-10">
+                                <div class="flex flex-col items-center justify-center">
+                                    <div class="bg-neutral-700 p-4 rounded-full mb-4">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                    </div>
+                                    <h3 class="text-xl font-bold text-white mb-1">No Pending Requests</h3>
+                                    <p class="text-neutral-400 text-center">There are no reimbursement requests waiting for your approval.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        <tr id="no-results" class="hidden">
+                            <td colspan="6" class="px-6 py-10">
+                                <div class="flex flex-col items-center justify-center">
+                                    <div class="bg-neutral-700 p-4 rounded-full mb-4">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                        </svg>
+                                    </div>
+                                    <h3 class="text-xl font-bold text-white mb-1">No Results Found</h3>
+                                    <p class="text-neutral-400 text-center">Try adjusting your search or filter criteria</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Pagination -->
+        {% if reimbursements %}
+        <div class="flex justify-center mt-6">
+            <nav class="flex items-center space-x-1">
+                <a href="#" class="px-3 py-2 rounded-md bg-neutral-800 border border-neutral-700 text-neutral-400 hover:bg-neutral-700 transition-colors">
+                    <span class="sr-only">Previous</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </a>
+                <a href="#" class="px-4 py-2 rounded-md bg-red-600 text-white font-medium hover:bg-red-700 transition-colors">1</a>
+                <a href="#" class="px-4 py-2 rounded-md bg-neutral-800 border border-neutral-700 text-neutral-400 hover:bg-neutral-700 transition-colors">2</a>
+                <a href="#" class="px-4 py-2 rounded-md bg-neutral-800 border border-neutral-700 text-neutral-400 hover:bg-neutral-700 transition-colors">3</a>
+                <a href="#" class="px-3 py-2 rounded-md bg-neutral-800 border border-neutral-700 text-neutral-400 hover:bg-neutral-700 transition-colors">
+                    <span class="sr-only">Next</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </a>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    // Function to update the counts in the stats cards
+    function updateCounts() {
+        const pendingCount = document.querySelectorAll('.status-badge.pending').length;4
+        const approvedCount = document.querySelectorAll('.status-badge.approved').length;
+        const rejectedCount = document.querySelectorAll('.status-badge.rejected').length;
+
+        document.getElementById('pending-count').textContent = pendingCount;
+        document.getElementById('approved-count').textContent = approvedCount;
+        document.getElementById('rejected-count').textContent = rejectedCount;
+    }
+
+    // Approve reimbursement and lock the action
+    function approveReimbursement(reimbursementId, url) {
+        const row = document.getElementById(`row-${reimbursementId}`);
+        const statusBadge = document.getElementById(`status-${reimbursementId}`);
+        const actionsCell = row.querySelector('td:last-child');
+
+        const originalHTML = actionsCell.innerHTML;
+        actionsCell.innerHTML = loadingSpinner();
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            },
+        })
+        .then(response => {
+            if (response.ok) {
+                lockReimbursement(reimbursementId, 'approved');
+                renderFinalStatus(row, statusBadge, actionsCell, 'Approved', 'green');
+                updateCounts();
+            } else {
+                console.error('Failed to approve reimbursement');
+                actionsCell.innerHTML = originalHTML;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            actionsCell.innerHTML = originalHTML;
+        });
+    }
+
+    // Reject reimbursement and lock the action
+    function rejectReimbursement(reimbursementId, url) {
+        const row = document.getElementById(`row-${reimbursementId}`);
+        const statusBadge = document.getElementById(`status-${reimbursementId}`);
+        const actionsCell = row.querySelector('td:last-child');
+
+        const originalHTML = actionsCell.innerHTML;
+        actionsCell.innerHTML = loadingSpinner();
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            },
+        })
+        .then(response => {
+            if (response.ok) {
+                lockReimbursement(reimbursementId, 'rejected');
+                renderFinalStatus(row, statusBadge, actionsCell, 'Rejected', 'red');
+                updateCounts();
+            } else {
+                console.error('Failed to reject reimbursement');
+                actionsCell.innerHTML = originalHTML;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            actionsCell.innerHTML = originalHTML;
+        });
+    }
+
+    // Persistently lock action by storing status in localStorage
+    function lockReimbursement(id, status) {
+        localStorage.setItem(`reimbursement-${id}`, status);
+    }
+
+    // Apply final locked status from localStorage on reload
+    function applyStoredStatus(reimbursementId) {
+        const status = localStorage.getItem(`reimbursement-${reimbursementId}`);
+        if (!status) return;
+
+        const row = document.getElementById(`row-${reimbursementId}`);
+        const statusBadge = document.getElementById(`status-${reimbursementId}`);
+        const actionsCell = row.querySelector('td:last-child');
+
+        if (status === 'approved') {
+            renderFinalStatus(row, statusBadge, actionsCell, 'Approved', 'green');
+        } else if (status === 'rejected') {
+            renderFinalStatus(row, statusBadge, actionsCell, 'Rejected', 'red');
+        }
+    }
+
+    // Final UI update after approval/rejection
+    function renderFinalStatus(row, badge, cell, label, color) {
+        const badgeClasses = {
+            approved: 'bg-green-500 text-green-400',
+            rejected: 'bg-red-500 text-red-400'
+        };
+        const buttonIcon = {
+            Approved: `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>`,
+            Rejected: `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>`
+        };
+
+        badge.className = `status-badge ${label.toLowerCase()} ${badgeClasses[label.toLowerCase()]} bg-opacity-20 text-xs font-medium px-3 py-1 rounded-full`;
+        badge.textContent = label;
+
+        row.setAttribute('data-status', label.toLowerCase());
+        row.classList.add(`bg-${color}-900`, 'bg-opacity-20');
+        setTimeout(() => row.classList.remove(`bg-${color}-900`, 'bg-opacity-20'), 1500);
+
+        cell.innerHTML = `
+            <div class="flex space-x-2">
+                <button disabled class="px-3 py-1 bg-${color}-600 text-white text-xs font-medium rounded flex items-center gap-1 cursor-default">
+                    ${buttonIcon[label]}
+                    ${label}
+                </button>
+            </div>`;
+    }
+
+    // Loader spinner during action
+    function loadingSpinner() {
+        return `<div class="flex justify-center"><svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>`;
+    }
+
+    // CSRF token fetcher
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Table filters & sort (unchanged from your version)
+    function filterTable() {
+        const searchInput = document.getElementById('search-input').value.toLowerCase();
+        const statusFilter = document.getElementById('status-filter').value;
+        const sortBy = document.getElementById('sort-by').value;
+        const tableBody = document.getElementById('reimbursement-table-body');
+        const rows = Array.from(tableBody.querySelectorAll('tr:not(#no-results)'));
+        const noResultsRow = document.getElementById('no-results');
+
+        rows.forEach(row => row.classList.remove('hidden'));
+
+        const filteredRows = rows.filter(row => {
+            if (!row.hasAttribute('data-name')) return false;
+            const name = row.getAttribute('data-name');
+            const description = row.getAttribute('data-description');
+            const status = row.getAttribute('data-status');
+            const matchesSearch = searchInput === '' || name.includes(searchInput) || description.includes(searchInput);
+            const matchesStatus = statusFilter === 'all' || status === statusFilter;
+            const shouldShow = matchesSearch && matchesStatus;
+            row.classList.toggle('hidden', !shouldShow);
+            return shouldShow;
+        });
+
+        filteredRows.sort((a, b) => {
+            switch (sortBy) {
+                case 'date-desc': return new Date(b.getAttribute('data-date')) - new Date(a.getAttribute('data-date'));
+                case 'date-asc': return new Date(a.getAttribute('data-date')) - new Date(b.getAttribute('data-date'));
+                case 'amount-desc': return parseFloat(b.getAttribute('data-amount')) - parseFloat(a.getAttribute('data-amount'));
+                case 'amount-asc': return parseFloat(a.getAttribute('data-amount')) - parseFloat(b.getAttribute('data-amount'));
+                case 'name': return a.getAttribute('data-name').localeCompare(b.getAttribute('data-name'));
+                default: return 0;
+            }
+        });
+
+        filteredRows.forEach(row => tableBody.appendChild(row));
+        noResultsRow.classList.toggle('hidden', filteredRows.length !== 0);
+        updateCounts();
+    }
+
+    function resetFilters() {
+        document.getElementById('search-input').value = '';
+        document.getElementById('status-filter').value = 'all';
+        document.getElementById('sort-by').value = 'date-desc';
+        filterTable();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize saved statuses
+        const rows = document.querySelectorAll('[id^="row-"]');
+        rows.forEach(row => {
+            const id = row.id.replace('row-', '');
+            applyStoredStatus(id);
+        });
+
+        updateCounts();
+
+        document.getElementById('apply-filters').addEventListener('click', filterTable);
+        document.getElementById('reset-filters').addEventListener('click', resetFilters);
+        document.getElementById('search-input').addEventListener('input', () => filterTable());
+        document.getElementById('status-filter').addEventListener('change', filterTable);
+        document.getElementById('sort-by').addEventListener('change', filterTable);
+    });
+</script>
+
+
+{% endblock %}

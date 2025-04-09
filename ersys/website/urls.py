@@ -71,6 +71,13 @@ urlpatterns = [
     path("add-salary/", views.add_salary, name="add_salary"),
     path("get-salary-details/", views.get_salary_details, name="get_salary_details"),
     path("finance/export/", views.export_salaries, name="export_salaries"),
+    path("reimbursement/", views.reimbursement, name="reimbursement"),
+    path("hr/review/", views.hr_review_reimbursements, name="hr_review_reimbursements"),
+    path("hr/approve/<int:reimbursement_id>/", views.approve_reimbursement, name="approve_reimbursement"),
+    path("hr/reject/<int:reimbursement_id>/", views.reject_reimbursement, name="reject_reimbursement"),
+    path('view-bill/<int:reimbursement_id>/', views.view_bill_file, name='view_bill'),
+
+
 
 
 

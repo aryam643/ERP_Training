@@ -256,3 +256,27 @@ class Finance(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.amount} ({self.status})"
+    
+
+class Reimbursement(models.Model):
+    STATUS_CHOICES = [
+        ("Pending", "Pending"),
+        ("Approved", "Approved"),
+        ("Rejected", "Rejected"),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    members_list = models.ManyToManyField(User, related_name="reimbursement_members")
+    date = models.DateField()
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    description = models.TextField()
+    bill_file = models.FileField(upload_to="reimbursements/", null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Pending")
+    approved_by_hr = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="hr_approver"
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Reimbursement - {self.user.username} ({self.amount})"
+

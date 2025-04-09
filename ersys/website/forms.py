@@ -160,3 +160,5 @@ class LeaveApplicationForm(forms.ModelForm):
                 raise forms.ValidationError("End date must be after the start date.")
 
         return cleaned_data
+    
+

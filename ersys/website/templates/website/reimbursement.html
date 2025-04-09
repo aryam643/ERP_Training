@@ -1,0 +1,475 @@
+{% extends "website/sidebar.html" %}
+
+{% block title %}
+<title>Reimbursement</title>
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-col bg-gradient-to-b from-neutral-900 to-neutral-800 p-4 md:p-8">
+    <div class="w-full  mx-auto">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-extrabold text-white">
+                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-red-400 via-red-500 to-red-600">
+                        Reimbursement
+                    </span>
+                </h1>
+                <p class="text-neutral-400 mt-1">Manage your reimbursements and expenses efficiently.</p>
+            </div>
+            <div class="mt-4 md:mt-0">
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+
+                        {% if request.user.role == "HR"%}
+                        <a href="{% url 'hr_review_reimbursements' %}" class="flex items-center justify-center space-x-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg px-6 py-3 shadow-md hover:shadow-lg transition-all duration-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                            </svg>
+                            <span>Approve Requests</span>
+                        </a>
+                        {%endif%}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Messages -->
+        {% if messages %}
+        <div class="animate-fade-in-down">
+            {% for message in messages %}
+            <div class="p-4 mb-4 rounded-lg bg-green-700 text-white flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Main Grid: Input Form (Left) + Reimbursement Status (Right) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Left Side: Input Form -->
+            <div>
+                <div class="bg-neutral-800 rounded-xl shadow-2xl border border-neutral-700 overflow-hidden transition-all duration-300 hover:shadow-red-900/20">
+                    <div class="border-b border-neutral-700">
+                        <div class="w-full py-4 px-6 flex items-center justify-between bg-gradient-to-r from-red-600 to-red-700 text-white">
+                            <span class="text-lg font-bold flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"></path>
+                                </svg>
+                                Reimbursement Request
+                            </span>
+                            <span class="text-xs bg-white bg-opacity-20 px-3 py-1 rounded-full font-medium">New</span>
+                        </div>
+                    </div>
+
+                    <form method="POST" enctype="multipart/form-data" class="p-6">
+                        {% csrf_token %}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Employee Name -->
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-neutral-300 flex items-center">
+                                    <svg class="w-4 h-4 mr-1 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                    </svg>
+                                    Employee Name
+                                </label>
+                                <input 
+                                    type="text"
+                                    value="{{ request.user.first_name }} {{ request.user.last_name }}"
+                                    disabled
+                                    class="w-full p-3 bg-neutral-700 border border-neutral-600 rounded-lg text-white"
+                                >
+                            </div>
+                            
+                            <!-- Date -->
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-neutral-300 flex items-center">
+                                    <svg class="w-4 h-4 mr-1 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                    Date
+                                </label>
+                                <input 
+                                    type="date" 
+                                    name="date" 
+                                    required 
+                                    class="w-full p-3 bg-neutral-700 border border-neutral-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-white outline-none transition-all"
+                                >
+                            </div>
+        
+                            <!-- Amount -->
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-neutral-300 flex items-center">
+                                    <svg class="w-4 h-4 mr-1 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Amount
+                                </label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-400">₹</span>
+                                    <input 
+                                        type="text" 
+                                        name="amount" 
+                                        required 
+                                        placeholder="0.00"
+                                        class="w-full p-3 pl-8 bg-neutral-700 border border-neutral-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-white placeholder-neutral-400 outline-none transition-all"
+                                    >
+                                </div>
+                            </div>
+                            
+                            {% comment %} <!-- Category (New field) -->
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-neutral-300 flex items-center">
+                                    <svg class="w-4 h-4 mr-1 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                    </svg>
+                                    Category
+                                </label>
+                                <select 
+                                    name="category" 
+                                    required 
+                                    class="w-full p-3 bg-neutral-700 border border-neutral-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-white outline-none transition-all"
+                                >
+                                    <option value="" disabled selected>Select category</option>
+                                    <option value="travel">Travel</option>
+                                    <option value="meals">Meals & Entertainment</option>
+                                    <option value="office">Office Supplies</option>
+                                    <option value="software">Software & Subscriptions</option>
+                                    <option value="training">Training & Education</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div> {% endcomment %}
+        
+                            <!-- Description -->
+                            <div class="space-y-2 md:col-span-2">
+                                <label class="block text-sm font-medium text-neutral-300 flex items-center">
+                                    <svg class="w-4 h-4 mr-1 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                    Description
+                                </label>
+                                <textarea 
+                                    name="description" 
+                                    required 
+                                    placeholder="Briefly describe the expense"
+                                    rows="3"
+                                    class="w-full p-3 bg-neutral-700 border border-neutral-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-white placeholder-neutral-400 outline-none transition-all"
+                                ></textarea>
+                            </div>
+        
+                            <!-- Project Members -->
+                            <div class="space-y-2 md:col-span-2">
+                                <label class="block text-sm font-medium text-neutral-300 flex items-center">
+                                    <svg class="w-4 h-4 mr-1 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                    </svg>
+                                    Project Members
+                                </label>
+                                
+                                <!-- Employee Selection UI -->
+                                <div class="mb-2">
+                                    <div class="relative">
+                                        <select 
+                                            id="employeeSelect"
+                                            class="w-full p-3 bg-neutral-700 border border-neutral-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-white outline-none transition-all"
+                                        >
+                                            <option value="" disabled selected>Select team members</option>
+                                            {% for employee in employees %}
+                                            <option value="{{ employee.id }}" data-name="{{ employee.first_name }} {{ employee.last_name }}">{{ employee.first_name }} {{ employee.last_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-neutral-400">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <button type="button" id="addEmployeeBtn" class="mt-2 px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded-lg flex items-center text-sm transition-colors">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                        </svg>
+                                        Add Team Member
+                                    </button>
+                                </div>
+                                
+                                <!-- Selected Employees Container -->
+                                <div id="selectedEmployees" class="flex flex-wrap gap-2 mb-3">
+                                    <!-- Employee buttons will be added here -->
+                                </div>
+                                
+                                <!-- Hidden input to store employee IDs -->
+                                <div id="employeeInputs">
+                                    <!-- Hidden inputs will be added here -->
+                                </div>
+                            </div>
+        
+                            <!-- Upload Bill -->
+                            <div class="w-full md:col-span-2">
+                                <label class="block text-sm font-medium text-neutral-300 flex items-center mb-2">
+                                    <svg class="w-4 h-4 mr-1 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                    </svg>
+                                    Upload Bill
+                                </label>
+                                <div
+                                  id="dropzone"
+                                  class="flex flex-col items-center justify-center w-full h-40 p-4 mt-1 text-sm text-center text-white border-2 border-dashed rounded-lg cursor-pointer border-neutral-500 hover:border-red-500 bg-neutral-800 transition-colors duration-200"
+                                >
+                                  <input type="file" name="bill_file" accept=".pdf,.jpg,.jpeg,.png" class="hidden" id="billFileInput" multiple required>
+                                  <svg class="w-10 h-10 mb-3 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                  </svg>
+                                  <span id="fileName" class="text-neutral-400">Drag & drop or click to upload</span>
+                                  <span class="text-xs text-neutral-500 mt-1">Supported formats: PDF, JPG, PNG</span>
+                                  <div id="preview" class="mt-4 hidden w-full">
+                                    <div class="flex items-center justify-center gap-2">
+                                      <div class="bg-neutral-700 p-2 rounded-lg">
+                                        <a id="previewFile" href="" target="_blank" class="text-blue-400 text-sm flex items-center justify-center">
+                                          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                          </svg>
+                                          View File
+                                        </a>
+                                      </div>
+                                      <button type="button" id="removeFile" class="text-red-400 hover:text-red-500">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                            </div>
+                        
+                            <!-- Submit Button -->
+                            <div class="mt-8 md:col-span-2 flex justify-end">
+                                <button 
+                                    type="submit" 
+                                    class="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-medium rounded-lg transition-all shadow-lg flex items-center gap-2 transform hover:translate-y-px"
+                                >
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Submit Reimbursement
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right Side: Reimbursement Status Table -->
+            <div>
+                <div class="bg-neutral-800 rounded-xl shadow-lg border border-neutral-700 overflow-hidden">
+                    <div class="p-4 border-b border-neutral-700 bg-neutral-750 flex justify-between items-center">
+                        <h2 class="text-xl font-semibold text-white">Your Reimbursement Status</h2>
+ 
+                    </div>
+                    
+                    <div class="p-4">
+                        {% if reimbursements %}
+                        <!-- Stats summary -->
+
+                        
+                        <!-- Table -->
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-neutral-700 text-white text-sm">
+                                <thead class="bg-neutral-750">
+                                    <tr>
+                                        <th class="px-4 py-2 text-left">Date</th>
+                                        <th class="px-4 py-2 text-left">Amount</th>
+                                        <th class="px-4 py-2 text-left">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-neutral-600">
+                                    {% for reimbursement in reimbursements %}
+                                    <tr class="hover:bg-neutral-750">
+                                        <td class="px-4 py-3">{{ reimbursement.date }}</td>
+                                        <td class="px-4 py-3">₹{{ reimbursement.amount }}</td>
+                                        <td class="px-4 py-3">
+                                            {% if reimbursement.status == "Approved" %}
+                                                <span class="text-green-400 font-semibold">{{ reimbursement.status }}</span>
+                                            {% elif reimbursement.status == "Rejected" %}
+                                                <span class="text-red-400 font-semibold">{{ reimbursement.status }}</span>
+                                            {% else %}
+                                                <span class="text-yellow-400 font-semibold">{{ reimbursement.status }}</span>
+                                            {% endif %}
+                                        </td>
+                                        {% comment %} <td class="px-4 py-3 text-right">
+                                            <a href="{% url 'reimbursement_detail' reimbursement.id %}" class="text-neutral-400 hover:text-white">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                </svg>
+                                            </a>
+                                        </td> {% endcomment %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        {% if reimbursements.has_other_pages %}
+                        <div class="flex justify-between items-center mt-4">
+                            <div class="text-sm text-neutral-400">
+                                Showing <span class="font-medium">{{ reimbursements.start_index }}</span> to <span class="font-medium">{{ reimbursements.end_index }}</span> of <span class="font-medium">{{ reimbursements.paginator.count }}</span> results
+                            </div>
+                            <div class="flex space-x-1">
+                                {% if reimbursements.has_previous %}
+                                <a href="?page={{ reimbursements.previous_page_number }}" class="px-3 py-1 rounded hover:bg-neutral-700 text-neutral-400">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                    </svg>
+                                </a>
+                                {% endif %}
+                                
+                                {% for i in reimbursements.paginator.page_range %}
+                                    {% if reimbursements.number == i %}
+                                    <a href="?page={{ i }}" class="px-3 py-1 rounded bg-neutral-700 text-white">{{ i }}</a>
+                                    {% else %}
+                                    <a href="?page={{ i }}" class="px-3 py-1 rounded hover:bg-neutral-700 text-neutral-400">{{ i }}</a>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if reimbursements.has_next %}
+                                <a href="?page={{ reimbursements.next_page_number }}" class="px-3 py-1 rounded hover:bg-neutral-700 text-neutral-400">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% else %}
+                            <p class="text-neutral-400">You have not submitted any reimbursements yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const dropzone = document.getElementById("dropzone");
+    const fileInput = document.getElementById("billFileInput");
+    const fileNameDisplay = document.getElementById("fileName");
+    const preview = document.getElementById("preview");
+    const previewImg = document.getElementById("previewImg");
+    const previewFile = document.getElementById("previewFile");
+    const removeFileBtn = document.getElementById("removeFile");
+    
+    // Employee selection functionality
+    const employeeSelect = document.getElementById("employeeSelect");
+    const addEmployeeBtn = document.getElementById("addEmployeeBtn");
+    const selectedEmployeesContainer = document.getElementById("selectedEmployees");
+    const employeeInputsContainer = document.getElementById("employeeInputs");
+    const selectedEmployees = new Set();
+    
+    // Add employee button click handler
+    addEmployeeBtn.addEventListener("click", () => {
+        const selectedOption = employeeSelect.options[employeeSelect.selectedIndex];
+        if (selectedOption && selectedOption.value) {
+            const employeeId = selectedOption.value;
+            const employeeName = selectedOption.dataset.name;
+            
+            // Check if employee is already added
+            if (!selectedEmployees.has(employeeId)) {
+                selectedEmployees.add(employeeId);
+                
+                // Create employee button
+                const employeeButton = document.createElement("div");
+                employeeButton.className = "flex items-center bg-neutral-700 text-white rounded-lg px-3 py-1.5 text-sm";
+                employeeButton.innerHTML = `
+                    <span>${employeeName}</span>
+                    <button type="button" class="ml-2 text-neutral-400 hover:text-red-400" data-id="${employeeId}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                `;
+                
+                // Add click handler to remove button
+                const removeButton = employeeButton.querySelector("button");
+                removeButton.addEventListener("click", () => {
+                    selectedEmployees.delete(employeeId);
+                    employeeButton.remove();
+                    document.getElementById(`employee-input-${employeeId}`).remove();
+                });
+                
+                // Add to DOM
+                selectedEmployeesContainer.appendChild(employeeButton);
+                
+                // Add hidden input
+                const hiddenInput = document.createElement("input");
+                hiddenInput.type = "hidden";
+                hiddenInput.name = "members_list[]";
+                hiddenInput.value = employeeId;
+                hiddenInput.id = `employee-input-${employeeId}`;
+                employeeInputsContainer.appendChild(hiddenInput);
+                
+                // Reset select
+                employeeSelect.selectedIndex = 0;
+            }
+        }
+    });
+  
+    // File handling
+    dropzone.addEventListener("click", () => fileInput.click());
+  
+    fileInput.addEventListener("change", () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+      
+      fileNameDisplay.textContent = file.name;
+  
+      const reader = new FileReader();
+      if (file.type.startsWith("image/")) {
+        reader.onload = () => {
+          previewImg.src = reader.result;
+          previewImg.classList.remove("hidden");
+          previewFile.classList.add("hidden");
+          preview.classList.remove("hidden");
+        };
+        reader.readAsDataURL(file);
+      } else {
+        previewImg.classList.add("hidden");
+        previewFile.href = URL.createObjectURL(file);
+        previewFile.classList.remove("hidden");
+        preview.classList.remove("hidden");
+      }
+    });
+  
+    removeFileBtn.addEventListener("click", () => {
+      fileInput.value = "";
+      preview.classList.add("hidden");
+      fileNameDisplay.textContent = "Drag & drop or click to upload";
+    });
+  
+    dropzone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropzone.classList.add("border-red-500");
+      dropzone.classList.add("bg-neutral-700");
+    });
+  
+    dropzone.addEventListener("dragleave", () => {
+      dropzone.classList.remove("border-red-500");
+      dropzone.classList.remove("bg-neutral-700");
+    });
+  
+    dropzone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      fileInput.files = e.dataTransfer.files;
+      fileInput.dispatchEvent(new Event("change")); // trigger preview logic
+      dropzone.classList.remove("border-red-500");
+      dropzone.classList.remove("bg-neutral-700");
+    });
+</script>
+
+{% endblock %}
