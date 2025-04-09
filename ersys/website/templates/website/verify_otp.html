@@ -1,0 +1,65 @@
+{% extends "website/index.html" %}
+
+{% block title %}
+<title>Verify OTP</title>
+{% endblock %}
+
+{% block head %}
+{{ block.super }}
+<!-- Toastify CSS & JS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.12.0/toastify.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.12.0/toastify.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="flex justify-center items-center min-h-screen bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-700">
+    <div class="bg-white p-8 rounded-xl shadow-xl w-full max-w-md">
+        <h2 class="text-3xl font-bold text-center text-gray-800">Verify OTP</h2>
+        <p class="text-gray-500 text-center mt-2">Enter the code sent to your email</p>
+
+        <form method="POST" class="mt-6 space-y-4">
+            {% csrf_token %}
+            
+            <div>
+                <label for="otp" class="block text-gray-700 font-medium">One-Time Password</label>
+                <div class="mt-1">
+                    <input 
+                        type="text" 
+                        name="otp" 
+                        id="otp" 
+                        required 
+                        placeholder="Enter your OTP code"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none text-center tracking-widest text-lg"
+                    >
+                </div>
+                <p class="text-sm text-gray-500 mt-2 text-center">The code will expire in 5 minutes</p>
+            </div>
+            
+            <button 
+                type="submit" 
+                class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg transition duration-200 shadow-md"
+            >
+                Verify OTP
+            </button>
+        </form>
+        
+        <p class="text-center text-gray-600 mt-4">Didn't receive the code? 
+            <a href="#" class="text-red-600 font-semibold hover:underline">Resend OTP</a>
+        </p>
+    </div>
+</div>
+
+{% if error %}
+<script>
+    Toastify({
+        text: "{{ error }}",
+        duration: 5000,
+        close: true,
+        gravity: "top",
+        position: "right",
+        backgroundColor: "#ef4444",
+        stopOnFocus: true
+    }).showToast();
+</script>
+{% endif %}
+{% endblock %}

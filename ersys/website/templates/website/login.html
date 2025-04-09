@@ -10,8 +10,14 @@
         <h2 class="text-3xl font-bold text-center text-gray-800">Welcome</h2>
         <p class="text-gray-500 text-center mt-2">Login to your account</p>
 
-        <form action="{% url 'login' %}" method="post" class="mt-6 space-y-4">
-            {% csrf_token %} 
+        <div class="flex justify-center mt-4 border-b border-gray-200">
+            <button id="passwordTab" class="px-4 py-2 font-medium text-red-600 border-b-2 border-red-600">Password</button>
+            <button id="otpTab" class="px-4 py-2 font-medium text-gray-500 hover:text-red-600">OTP</button>
+        </div>
+
+        <!-- Password Login Form -->
+        <form id="passwordForm" action="{% url 'login' %}" method="post" class="mt-6 space-y-4">
+            {% csrf_token %}
 
             <div>
                 <label for="email" class="block text-gray-700 font-medium">Email</label>
@@ -29,17 +35,71 @@
                 class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg transition duration-200 shadow-md">
                 Login
             </button>
+
+            <div class="text-right">
+                <a href="#" class="text-sm text-gray-600 hover:text-red-600">Forgot password?</a>
+            </div>
         </form>
 
-        <p class="text-center text-gray-600 mt-4">Don't have an account? 
+        <!-- OTP Login Form -->
+        <form id="otpForm" action="{% url 'request_otp' %}" method="post" class="mt-6 space-y-4 hidden">
+            {% csrf_token %}
+
+            <div>
+                <label for="otp_email" class="block text-gray-700 font-medium">Email</label>
+                <input type="email" name="email" id="otp_email" placeholder="Enter your email" 
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none">
+            </div>
+            
+            <button type="submit" 
+                class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg transition duration-200 shadow-md">
+                Send OTP
+            </button>
+        </form>
+
+        <p class="text-center text-gray-600 mt-6">Don't have an account? 
             <a href="{% url 'register' %}" class="text-red-600 font-semibold hover:underline">Register</a>
         </p>
 
         {% if messages %}
             {% for message in messages %}
-                <p class="text-red-500">{{ message }}</p>
+                <p class="text-red-500 mt-4 text-center">{{ message }}</p>
             {% endfor %}
         {% endif %}
     </div>
 </div>
+
+<script>
+    // Tab switching functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const passwordTab = document.getElementById('passwordTab');
+        const otpTab = document.getElementById('otpTab');
+        const passwordForm = document.getElementById('passwordForm');
+        const otpForm = document.getElementById('otpForm');
+
+        passwordTab.addEventListener('click', function() {
+            // Show password form, hide OTP form
+            passwordForm.classList.remove('hidden');
+            otpForm.classList.add('hidden');
+            
+            // Update active tab styling
+            passwordTab.classList.add('text-red-600', 'border-b-2', 'border-red-600');
+            passwordTab.classList.remove('text-gray-500');
+            otpTab.classList.add('text-gray-500');
+            otpTab.classList.remove('text-red-600', 'border-b-2', 'border-red-600');
+        });
+
+        otpTab.addEventListener('click', function() {
+            // Show OTP form, hide password form
+            passwordForm.classList.add('hidden');
+            otpForm.classList.remove('hidden');
+            
+            // Update active tab styling
+            otpTab.classList.add('text-red-600', 'border-b-2', 'border-red-600');
+            otpTab.classList.remove('text-gray-500');
+            passwordTab.classList.add('text-gray-500');
+            passwordTab.classList.remove('text-red-600', 'border-b-2', 'border-red-600');
+        });
+    });
+</script>
 {% endblock %}

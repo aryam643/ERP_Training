@@ -8,7 +8,7 @@ from django.contrib import messages
 from .models import *
 from .forms import *
 from django.http import JsonResponse
-from django.contrib.auth import login,authenticate,logout
+from django.contrib.auth import login,authenticate,logout,get_backends
 from django.db.models import Q
 from django.contrib.auth.signals import user_logged_in, user_logged_out
 from django.dispatch import receiver
@@ -23,13 +23,69 @@ from django.conf import settings
 import requests
 from datetime import datetime
 from django.views.decorators.csrf import csrf_exempt
+import random,redis
+from django.core.cache import cache
+
+redis_client = redis.Redis(host='localhost', port=6379, db=0)
 
 
 
+def request_otp_view(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        request.session["email"] = email
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return render(request, "website/request_otp.html", {"error": "No user found with that email."})
+
+        otp = str(random.randint(100000, 999999))
+        redis_client.setex(f"otp:{email}", 300, otp)  # OTP expires in 5 minutes
+
+        send_mail(
+            subject="Your ERP Login OTP",
+            message=f"Your OTP for login is: {otp}",
+            from_email="no-reply@erp.com",
+            recipient_list=[email],
+            fail_silently=False,
+        )
+
+        return redirect("verify_otp")
+
+    return render(request, "website/request_otp.html")
+
+def verify_otp_view(request):
+    if request.method == "POST":
+        otp = request.POST.get("otp")
+        email = request.session.get("email")
+
+        if not email:
+            return redirect("request_otp")
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return render(request, "website/verify_otp.html", {"error": "User not found."})
+
+        stored_otp = redis_client.get(f"otp:{email}")
+        if stored_otp and stored_otp.decode() == otp:
+            backend = get_backends()[0]
+            user.backend = f"{backend.__module__}.{backend.__class__.__name__}"
+
+            login(request, user)
+            return redirect("dashboard")  # Make sure you have a named URL called `dashboard`
+        else:
+            return render(request, "website/verify_otp.html", {"error": "Invalid OTP"})
+
+    return render(request, "website/verify_otp.html")
+
+@login_required
 def hr_review_reimbursements(request):
     reimbursements = Reimbursement.objects.all()
     return render(request, "website/hr_review_re.html", {"reimbursements": reimbursements})
 
+@login_required
 def approve_reimbursement(request, reimbursement_id):
     reimbursement = get_object_or_404(Reimbursement, id=reimbursement_id)
     reimbursement.status = "Approved"
@@ -48,7 +104,7 @@ def approve_reimbursement(request, reimbursement_id):
 
     return redirect("hr_review_reimbursements")
 
-
+@login_required
 def reject_reimbursement(request, reimbursement_id):
     reimbursement = get_object_or_404(Reimbursement, id=reimbursement_id)
     reimbursement.status = "Rejected"
@@ -67,6 +123,7 @@ def reject_reimbursement(request, reimbursement_id):
 
     return redirect("hr_review_reimbursements")
 
+@login_required
 def reimbursement(request):
     employees = User.objects.all()
 
@@ -119,6 +176,7 @@ def reimbursement(request):
         , "reimbursements": reimbursements
     })
 
+@login_required
 def view_bill_file(request, reimbursement_id):
     reimbursement = get_object_or_404(Reimbursement, id=reimbursement_id)
 
@@ -133,6 +191,7 @@ def view_bill_file(request, reimbursement_id):
     except FileNotFoundError:
         raise Http404("File does not exist.")
 
+@login_required
 def finance(request):
     salaries = Finance.objects.filter(description__startswith="Salary").order_by("-created_at")
     search_query = request.GET.get("search", "").strip()
@@ -150,6 +209,7 @@ def finance(request):
 
     return render(request, "website/finance.html", {"salaries": salaries})
 
+@login_required
 def export_salaries(request):
     salaries = Finance.objects.filter(description__startswith="Salary").order_by("-created_at")
 
@@ -172,6 +232,7 @@ SALARY_CONFIG = {
 }
 
 # Fetch predefined salary based on user role (for AJAX)
+@login_required
 def get_salary_details(request):
     user_id = request.GET.get("user_id")
     try:
@@ -182,6 +243,7 @@ def get_salary_details(request):
         return JsonResponse({"error": "User not found"}, status=404)
 
 # Salary Entry View
+@login_required
 def add_salary(request):
     if request.method == "POST":
         user_id = request.POST.get("user")
@@ -219,6 +281,7 @@ def add_salary(request):
 
 
 # User Authentication
+@login_required
 def project_timeline(request):
     if request.user.role == "Employee":
         projects = Project.objects.filter(members=request.user)

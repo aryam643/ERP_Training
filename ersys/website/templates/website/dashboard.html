@@ -6,119 +6,145 @@
     <title>ERP Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            900: '#121212',
+                            800: '#1e1e1e',
+                            700: '#2d2d2d',
+                            600: '#3d3d3d',
+                            500: '#4d4d4d'
+                        },
+                        accent: {
+                            500: '#ef4444',
+                            600: '#dc2626',
+                            700: '#b91c1c'
+                        }
+                    },
+                    boxShadow: {
+                        'card': '0 4px 20px -2px rgba(0, 0, 0, 0.3)',
+                        'sidebar': '0 0 20px rgba(0, 0, 0, 0.5)'
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body class="bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-700 min-h-screen flex font-sans">
+<body class="bg-gradient-to-br from-dark-900 via-dark-800 to-dark-700 min-h-screen flex flex-col md:flex-row font-sans text-gray-100">
+
+    <!-- Mobile Navigation Toggle -->
+    <div class="md:hidden fixed top-4 right-4 z-50">
+        <button id="mobile-menu-toggle" class="p-2 bg-dark-800 rounded-lg shadow-lg border border-dark-600 text-white">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
 
     <!-- Sidebar -->
-    <div class="w-72 bg-neutral-900 text-white flex flex-col shadow-xl">
+    <div id="sidebar" class="w-full md:w-72 bg-dark-900 text-white flex flex-col shadow-sidebar transform transition-transform duration-300 ease-in-out fixed md:sticky top-0 h-screen z-40 -translate-x-full md:translate-x-0">
         <!-- Logo and Brand -->
-        <div class="p-6 border-b border-neutral-700">
-            <h1 class="text-3xl font-bold flex items-center">
-                <i class="fas fa-chart-line mr-3 text-red-500"></i>
-                ERP Dashboard
-            </h1>
+        <div class="p-6 border-b border-dark-700 flex items-center">
+            <i class="fas fa-chart-line text-2xl text-accent-500 mr-3"></i>
+            <h1 class="text-2xl font-bold">ERP Dashboard</h1>
         </div>
         
         <!-- Navigation Menu -->
-        <div class="p-6 flex-grow">
+        <div class="p-4 flex-grow overflow-y-auto scrollbar-thin">
             <nav class="space-y-1">
-                <a href="{% url 'attendance' %}" class="group flex items-center px-4 py-3 text-lg rounded-lg hover:bg-neutral-800 transition-all duration-200">
-                    <i class="fas fa-calendar-check mr-3 text-neutral-400 group-hover:text-red-500"></i>
-                    <span class="group-hover:text-red-500">Attendance</span>
+                <a href="{% url 'attendance' %}" class="group flex items-center px-4 py-3 text-base rounded-lg hover:bg-dark-800 transition-all duration-200 hover:translate-x-1">
+                    <i class="fas fa-calendar-check mr-3 text-gray-400 group-hover:text-accent-500 transition-colors"></i>
+                    <span class="group-hover:text-accent-500 transition-colors">Attendance</span>
                 </a>
-                <a href="{% url 'leave' %}" class="group flex items-center px-4 py-3 text-lg rounded-lg hover:bg-neutral-800 transition-all duration-200">
-                    <i class="fas fa-calendar-alt mr-3 text-neutral-400 group-hover:text-red-500"></i>
-                    <span class="group-hover:text-red-500">Leave</span>
-                </a>
-                
-                <a href="{% url 'account' %}" class="group flex items-center px-4 py-3 text-lg rounded-lg hover:bg-neutral-800 transition-all duration-200">
-                    <i class="fas fa-user-circle mr-3 text-neutral-400 group-hover:text-red-500"></i>
-                    <span class="group-hover:text-red-500">Account</span>
+                <a href="{% url 'leave' %}" class="group flex items-center px-4 py-3 text-base rounded-lg hover:bg-dark-800 transition-all duration-200 hover:translate-x-1">
+                    <i class="fas fa-calendar-alt mr-3 text-gray-400 group-hover:text-accent-500 transition-colors"></i>
+                    <span class="group-hover:text-accent-500 transition-colors">Leave</span>
                 </a>
                 
-                <a href="{% url 'project_list' %}" class="group flex items-center px-4 py-3 text-lg rounded-lg hover:bg-neutral-800 transition-all duration-200">
-                    <i class="fas fa-project-diagram mr-3 text-neutral-400 group-hover:text-red-500"></i>
-                    <span class="group-hover:text-red-500">Projects</span>
+                <a href="{% url 'account' %}" class="group flex items-center px-4 py-3 text-base rounded-lg hover:bg-dark-800 transition-all duration-200 hover:translate-x-1">
+                    <i class="fas fa-user-circle mr-3 text-gray-400 group-hover:text-accent-500 transition-colors"></i>
+                    <span class="group-hover:text-accent-500 transition-colors">Account</span>
                 </a>
                 
-                <a href="{% url 'project_timeline' %}" class="group flex items-center px-4 py-3 text-lg rounded-lg hover:bg-neutral-800 transition-all duration-200">
-                    <i class="fas fa-calendar-alt mr-3 text-neutral-400 group-hover:text-red-500"></i>
-                    <span class="group-hover:text-red-500">Timeline</span>
+                <a href="{% url 'project_list' %}" class="group flex items-center px-4 py-3 text-base rounded-lg hover:bg-dark-800 transition-all duration-200 hover:translate-x-1">
+                    <i class="fas fa-project-diagram mr-3 text-gray-400 group-hover:text-accent-500 transition-colors"></i>
+                    <span class="group-hover:text-accent-500 transition-colors">Projects</span>
                 </a>
                 
-                <a href="{% url 'send_mail' %}" class="group flex items-center px-4 py-3 text-lg rounded-lg hover:bg-neutral-800 transition-all duration-200">
-                    <i class="fas fa-envelope mr-3 text-neutral-400 group-hover:text-red-500"></i>
-                    <span class="group-hover:text-red-500">Mail</span>
+                <a href="{% url 'project_timeline' %}" class="group flex items-center px-4 py-3 text-base rounded-lg hover:bg-dark-800 transition-all duration-200 hover:translate-x-1">
+                    <i class="fas fa-calendar-alt mr-3 text-gray-400 group-hover:text-accent-500 transition-colors"></i>
+                    <span class="group-hover:text-accent-500 transition-colors">Timeline</span>
                 </a>
                 
-                <a href="{% url 'resignation' %}" class="group flex items-center px-4 py-3 text-lg rounded-lg hover:bg-neutral-800 transition-all duration-200">
-                    <i class="fas fa-sign-out-alt mr-3 text-neutral-400 group-hover:text-red-500"></i>
-                    <span class="group-hover:text-red-500">Resignation</span>
+                <a href="{% url 'send_mail' %}" class="group flex items-center px-4 py-3 text-base rounded-lg hover:bg-dark-800 transition-all duration-200 hover:translate-x-1">
+                    <i class="fas fa-envelope mr-3 text-gray-400 group-hover:text-accent-500 transition-colors"></i>
+                    <span class="group-hover:text-accent-500 transition-colors">Mail</span>
+                </a>
+                
+                <a href="{% url 'resignation' %}" class="group flex items-center px-4 py-3 text-base rounded-lg hover:bg-dark-800 transition-all duration-200 hover:translate-x-1">
+                    <i class="fas fa-sign-out-alt mr-3 text-gray-400 group-hover:text-accent-500 transition-colors"></i>
+                    <span class="group-hover:text-accent-500 transition-colors">Resignation</span>
                 </a>
 
-                <a href="{% url 'reimbursement' %}" class="group flex items-center px-4 py-3 text-lg rounded-lg hover:bg-neutral-800 transition-all duration-200">
-                    <i class="fas fa-wallet mr-3 text-neutral-400 group-hover:text-red-500"></i>
-                    <span class="group-hover:text-red-500">Reimbursement</span>
+                <a href="{% url 'reimbursement' %}" class="group flex items-center px-4 py-3 text-base rounded-lg hover:bg-dark-800 transition-all duration-200 hover:translate-x-1">
+                    <i class="fas fa-wallet mr-3 text-gray-400 group-hover:text-accent-500 transition-colors"></i>
+                    <span class="group-hover:text-accent-500 transition-colors">Reimbursement</span>
                 </a>
 
                 {% if request.user.role == "HR" %}
-                <div class="mt-6 pt-6 border-t border-neutral-700">
-                    <h3 class="text-sm uppercase text-neutral-500 font-semibold mb-3 px-4">HR Administration</h3>
+                <div class="mt-6 pt-6 border-t border-dark-700">
+                    <h3 class="text-xs uppercase text-gray-500 font-semibold mb-3 px-4 tracking-wider">HR Administration</h3>
                     
-                    <a href="{% url 'update_user_role' %}" class="group flex items-center px-4 py-3 text-lg rounded-lg hover:bg-neutral-800 transition-all duration-200">
-                        <i class="fas fa-users-cog mr-3 text-neutral-400 group-hover:text-red-500"></i>
-                        <span class="group-hover:text-red-500">Manage User Roles</span>
+                    <a href="{% url 'update_user_role' %}" class="group flex items-center px-4 py-3 text-base rounded-lg hover:bg-dark-800 transition-all duration-200 hover:translate-x-1">
+                        <i class="fas fa-users-cog mr-3 text-gray-400 group-hover:text-accent-500 transition-colors"></i>
+                        <span class="group-hover:text-accent-500 transition-colors">Manage User Roles</span>
                     </a>
                     
-                    <a href="{% url 'user_list' %}" class="group flex items-center px-4 py-3 text-lg rounded-lg hover:bg-neutral-800 transition-all duration-200">
-                        <i class="fas fa-file-export mr-3 text-neutral-400 group-hover:text-red-500"></i>
-                        <span class="group-hover:text-red-500">Export Users CSV</span>
+                    <a href="{% url 'user_list' %}" class="group flex items-center px-4 py-3 text-base rounded-lg hover:bg-dark-800 transition-all duration-200 hover:translate-x-1">
+                        <i class="fas fa-file-export mr-3 text-gray-400 group-hover:text-accent-500 transition-colors"></i>
+                        <span class="group-hover:text-accent-500 transition-colors">Export Users CSV</span>
                     </a>
-
-                    
                 </div>
                 {% endif %}
 
                 {% if request.user.username == "Finance" %}
-                <h2 class="text-2xl font-bold text-white mb-6">Finance Module</h2>
-                <div class="space-y-3">
-                
-                    <!-- Salary Management -->
-                    <a href="{% url 'finance' %}" class="group flex items-center px-4 py-3 text-lg rounded-lg hover:bg-neutral-800 transition-all duration-200">
-                        <i class="fas fa-dollar-sign mr-3 text-neutral-400 group-hover:text-red-500"></i>
-                        <span class="group-hover:text-red-500">Salary Management</span>
+                <div class="mt-6 pt-6 border-t border-dark-700">
+                    <h3 class="text-xs uppercase text-gray-500 font-semibold mb-3 px-4 tracking-wider">Finance Module</h3>
+                    
+                    <a href="{% url 'finance' %}" class="group flex items-center px-4 py-3 text-base rounded-lg hover:bg-dark-800 transition-all duration-200 hover:translate-x-1">
+                        <i class="fas fa-dollar-sign mr-3 text-gray-400 group-hover:text-accent-500 transition-colors"></i>
+                        <span class="group-hover:text-accent-500 transition-colors">Salary Management</span>
                     </a>
-                
                 </div>                
-
                 {% endif %}
             </nav>
         </div>
 
         <!-- User Actions -->
-        <div class="p-6 border-t border-neutral-700">
+        <div class="p-4 border-t border-dark-700 bg-dark-800 bg-opacity-50">
             {% if user.is_authenticated %}
-            <div class="flex items-center mb-4">
-                <div class="w-10 h-10 rounded-full bg-neutral-700 flex items-center justify-center mr-3">
-                    <i class="fas fa-user text-neutral-400"></i>
+            <div class="flex items-center mb-4 p-2">
+                <div class="w-10 h-10 rounded-full bg-dark-600 flex items-center justify-center mr-3 border border-dark-500">
+                    <i class="fas fa-user text-gray-300"></i>
                 </div>
                 <div>
                     <p class="font-medium">{{ user.username }}</p>
-                    <p class="text-sm text-neutral-400">{{ user.role }}</p>
+                    <p class="text-xs text-gray-400">{{ user.role }}</p>
                 </div>
             </div>
             <form method="post" action="{% url 'logout' %}">
                 {% csrf_token %}
-                <button type="submit" class="w-full flex items-center justify-center px-4 py-2 bg-neutral-800 hover:bg-red-900 text-white rounded-lg transition-colors duration-200">
+                <button type="submit" class="w-full flex items-center justify-center px-4 py-2.5 bg-dark-700 hover:bg-accent-700 text-white rounded-lg transition-colors duration-200 shadow-md">
                     <i class="fas fa-sign-out-alt mr-2"></i> Logout
                 </button>
             </form>
             {% else %}
             <div class="flex space-x-2">
-                <a href="{% url 'login' %}" class="flex-1 flex items-center justify-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors duration-200">
+                <a href="{% url 'login' %}" class="flex-1 flex items-center justify-center px-4 py-2.5 bg-accent-600 hover:bg-accent-700 text-white rounded-lg transition-colors duration-200 shadow-md">
                     <i class="fas fa-sign-in-alt mr-2"></i> Login
                 </a>
-                <a href="{% url 'register' %}" class="flex-1 flex items-center justify-center px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg transition-colors duration-200">
+                <a href="{% url 'register' %}" class="flex-1 flex items-center justify-center px-4 py-2.5 bg-dark-700 hover:bg-dark-600 text-white rounded-lg transition-colors duration-200 shadow-md">
                     <i class="fas fa-user-plus mr-2"></i> Register
                 </a>
             </div>
@@ -127,237 +153,277 @@
     </div>
 
     <!-- Main Content -->
-    <div class="flex-1 p-8 overflow-auto">
+    <div class="flex-1 p-4 md:p-8 overflow-auto w-full md:ml-0 transition-all duration-300">
         <!-- Header -->
-        <header class="mb-8 flex justify-between items-center">
+        <header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center bg-dark-800 p-4 rounded-xl shadow-md border border-dark-700">
             <div>
-                <h2 class="text-3xl font-bold text-white">Welcome, {% if user.is_authenticated %}{{ user.username }}{% else %}Guest{% endif %}</h2>
-                <p class="text-neutral-400">{{ current_date|date:"l, F j, Y" }}</p>
+                <h2 class="text-2xl md:text-3xl font-bold text-white">Welcome, {% if user.is_authenticated %}{{ user.username }}{% else %}Guest{% endif %}</h2>
+                <p class="text-gray-400">{{ current_date|date:"l, F j, Y" }}</p>
             </div>
             
-            <div class="flex items-center space-x-4">
-                <button class="p-2 bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors">
-                    <i class="fas fa-bell text-neutral-400"></i>
+            <div class="flex items-center space-x-3 mt-4 md:mt-0">
+                <button class="p-2.5 bg-dark-700 rounded-lg hover:bg-dark-600 transition-colors duration-200 relative group">
+                    <i class="fas fa-bell text-gray-300"></i>
+                    <span class="absolute -top-1 -right-1 w-4 h-4 bg-accent-500 rounded-full text-xs flex items-center justify-center">3</span>
+                    <span class="absolute right-0 top-full mt-2 w-48 bg-dark-800 rounded-lg shadow-lg p-2 text-sm border border-dark-600 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+                        You have 3 new notifications
+                    </span>
                 </button>
-                <button class="p-2 bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors">
-                    <i class="fas fa-cog text-neutral-400"></i>
+                <button class="p-2.5 bg-dark-700 rounded-lg hover:bg-dark-600 transition-colors duration-200">
+                    <i class="fas fa-cog text-gray-300"></i>
                 </button>
             </div>
         </header>
         
         <!-- Dashboard Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-10">
             <!-- Account Card -->
-            <div class="bg-neutral-800 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 border border-neutral-700">
-                <div class="p-6">
+            <div class="bg-dark-800 rounded-xl shadow-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:translate-y-[-4px] border border-dark-700 group">
+                <div class="p-5 md:p-6">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-xl font-semibold text-white">Account</h3>
-                        <div class="w-10 h-10 rounded-full bg-red-900/30 flex items-center justify-center">
-                            <i class="fas fa-user-circle text-red-500"></i>
+                        <h3 class="text-xl font-semibold text-white group-hover:text-accent-500 transition-colors">Account</h3>
+                        <div class="w-10 h-10 rounded-full bg-accent-500 bg-opacity-20 flex items-center justify-center group-hover:bg-accent-500 transition-colors">
+                            <i class="fas fa-user-circle text-accent-500 group-hover:text-white transition-colors"></i>
                         </div>
                     </div>
-                    <p class="text-neutral-400 mb-6">Manage your profile, password, and personal settings.</p>
-                    <a href="{% url 'account' %}" class="inline-flex items-center text-red-500 hover:text-red-400 transition-colors">
+                    <p class="text-gray-400 mb-6 text-sm md:text-base">Manage your profile, password, and personal settings.</p>
+                    <a href="{% url 'account' %}" class="inline-flex items-center text-accent-500 hover:text-accent-400 transition-colors group-hover:translate-x-1 transform transition-transform duration-200 font-medium">
                         <span>Go to Account</span>
-                        <i class="fas fa-arrow-right ml-2"></i>
+                        <i class="fas fa-arrow-right ml-2 transition-transform group-hover:translate-x-1"></i>
                     </a>
                 </div>
             </div>
             
             <!-- Projects Card -->
-            <div class="bg-neutral-800 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 border border-neutral-700">
-                <div class="p-6">
+            <div class="bg-dark-800 rounded-xl shadow-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:translate-y-[-4px] border border-dark-700 group">
+                <div class="p-5 md:p-6">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-xl font-semibold text-white">Projects</h3>
-                        <div class="w-10 h-10 rounded-full bg-red-900/30 flex items-center justify-center">
-                            <i class="fas fa-project-diagram text-red-500"></i>
+                        <h3 class="text-xl font-semibold text-white group-hover:text-accent-500 transition-colors">Projects</h3>
+                        <div class="w-10 h-10 rounded-full bg-accent-500 bg-opacity-20 flex items-center justify-center group-hover:bg-accent-500 transition-colors">
+                            <i class="fas fa-project-diagram text-accent-500 group-hover:text-white transition-colors"></i>
                         </div>
                     </div>
-                    <p class="text-neutral-400 mb-6">View and manage your assigned projects and tasks.</p>
-                    <a href="{% url 'project_list' %}" class="inline-flex items-center text-red-500 hover:text-red-400 transition-colors">
+                    <p class="text-gray-400 mb-6 text-sm md:text-base">View and manage your assigned projects and tasks.</p>
+                    <a href="{% url 'project_list' %}" class="inline-flex items-center text-accent-500 hover:text-accent-400 transition-colors group-hover:translate-x-1 transform transition-transform duration-200 font-medium">
                         <span>Go to Projects</span>
-                        <i class="fas fa-arrow-right ml-2"></i>
+                        <i class="fas fa-arrow-right ml-2 transition-transform group-hover:translate-x-1"></i>
                     </a>
                 </div>
             </div>
             
             <!-- Calendar Card -->
-            <div class="bg-neutral-800 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 border border-neutral-700">
-                <div class="p-6">
+            <div class="bg-dark-800 rounded-xl shadow-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:translate-y-[-4px] border border-dark-700 group">
+                <div class="p-5 md:p-6">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-xl font-semibold text-white">Current Timeline</h3>
-                        <div class="w-10 h-10 rounded-full bg-red-900/30 flex items-center justify-center">
-                            <i class="fas fa-calendar-alt text-red-500"></i>
+                        <h3 class="text-xl font-semibold text-white group-hover:text-accent-500 transition-colors">Current Timeline</h3>
+                        <div class="w-10 h-10 rounded-full bg-accent-500 bg-opacity-20 flex items-center justify-center group-hover:bg-accent-500 transition-colors">
+                            <i class="fas fa-calendar-alt text-accent-500 group-hover:text-white transition-colors"></i>
                         </div>
                     </div>
-                    <p class="text-neutral-400 mb-6">Track your meetings, deadlines, and important dates.</p>
-                    <a href="{% url 'project_timeline' %}" class="inline-flex items-center text-red-500 hover:text-red-400 transition-colors">
+                    <p class="text-gray-400 mb-6 text-sm md:text-base">Track your meetings, deadlines, and important dates.</p>
+                    <a href="{% url 'project_timeline' %}" class="inline-flex items-center text-accent-500 hover:text-accent-400 transition-colors group-hover:translate-x-1 transform transition-transform duration-200 font-medium">
                         <span>Go to Current Timeline</span>
-                        <i class="fas fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
-            </div>
-            <div class="bg-neutral-800 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 border border-neutral-700">
-                <div class="p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-xl font-semibold text-white">Guest Room Booking</h3>
-                        <div class="w-10 h-10 rounded-full bg-red-900/30 flex items-center justify-center">
-                            <i class="fas fa-bed text-red-500"></i>
-                        </div>
-                    </div>
-                    <p class="text-neutral-400 mb-6">Book and manage guest rooms effortlessly.</p>
-                    <a href="{% url 'book_room' %}" class="inline-flex items-center text-red-500 hover:text-red-400 transition-colors">
-                        <span>Go to Booking</span>
-                        <i class="fas fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
-            </div>
-            <div class="bg-neutral-800 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 border border-neutral-700">
-                <div class="p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-xl font-semibold text-white">Holiday Calendar</h3>
-                        <div class="w-10 h-10 rounded-full bg-red-900/30 flex items-center justify-center">
-                            <i class="fas fa-calendar-alt text-red-500"></i>
-                        </div>
-                    </div>
-                    <p class="text-neutral-400 mb-6">View upcoming holidays and plan your leaves.</p>
-                    <a href="{% url 'holiday_calendar' %}" class="inline-flex items-center text-red-500 hover:text-red-400 transition-colors">
-                        <span>View Holidays</span>
-                        <i class="fas fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
-            </div>
-            <div class="bg-neutral-800 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 border border-neutral-700">
-                <div class="p-6"> 
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-xl font-semibold text-white">Leave Management</h3>
-                        <div class="w-10 h-10 rounded-full bg-red-900/30 flex items-center justify-center">
-                            <i class="fas fa-calendar-check text-red-500"></i>
-                        </div>
-                    </div>
-                    <p class="text-neutral-400 mb-6">Apply for leave, check approval status, and manage your leave history.</p>
-                    <a href="{% url 'leave' %}" class="inline-flex items-center text-red-500 hover:text-red-400 transition-colors">
-                        <span>Manage Leaves</span>
-                        <i class="fas fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
-            </div>
-
-
-            <div class="bg-neutral-800 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 border border-neutral-700">
-                <div class="p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-xl font-semibold text-white">Resignation</h3>
-                        <div class="w-10 h-10 rounded-full bg-red-900/30 flex items-center justify-center">
-                            <i class="fas fa-sign-out-alt text-red-500"></i>
-                        </div>
-                    </div>
-                    <p class="text-neutral-400 mb-6">Submit your resignation and track approval status.</p>
-                    <a href="{% url 'resignation' %}" class="inline-flex items-center text-red-500 hover:text-red-400 transition-colors">
-                        <span>Submit Resignation</span>
-                        <i class="fas fa-arrow-right ml-2"></i>
+                        <i class="fas fa-arrow-right ml-2 transition-transform group-hover:translate-x-1"></i>
                     </a>
                 </div>
             </div>
             
-
-
-
-            <div class="bg-neutral-800 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 border border-neutral-700">
-                <div class="p-6">
+            <!-- Guest Room Booking -->
+            <div class="bg-dark-800 rounded-xl shadow-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:translate-y-[-4px] border border-dark-700 group">
+                <div class="p-5 md:p-6">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-xl font-semibold text-white">Reimbursement</h3>
-                        <div class="w-10 h-10 rounded-full bg-red-900/30 flex items-center justify-center">
-                            <i class="fas fa-wallet text-red-500"></i>
+                        <h3 class="text-xl font-semibold text-white group-hover:text-accent-500 transition-colors">Guest Room Booking</h3>
+                        <div class="w-10 h-10 rounded-full bg-accent-500 bg-opacity-20 flex items-center justify-center group-hover:bg-accent-500 transition-colors">
+                            <i class="fas fa-bed text-accent-500 group-hover:text-white transition-colors"></i>
                         </div>
                     </div>
-                    <p class="text-neutral-400 mb-6">View submitted reimbursement requests and their statuses.</p>
-                    <a href="{% url 'reimbursement' %}" class="inline-flex items-center text-red-500 hover:text-red-400 transition-colors">
-                        <span>Go to Reimbursements</span>
-                        <i class="fas fa-arrow-right ml-2"></i>
+                    <p class="text-gray-400 mb-6 text-sm md:text-base">Book and manage guest rooms effortlessly.</p>
+                    <a href="{% url 'book_room' %}" class="inline-flex items-center text-accent-500 hover:text-accent-400 transition-colors group-hover:translate-x-1 transform transition-transform duration-200 font-medium">
+                        <span>Go to Booking</span>
+                        <i class="fas fa-arrow-right ml-2 transition-transform group-hover:translate-x-1"></i>
                     </a>
                 </div>
             </div>
+            
+            <!-- Holiday Calendar -->
+            <div class="bg-dark-800 rounded-xl shadow-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:translate-y-[-4px] border border-dark-700 group">
+                <div class="p-5 md:p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-semibold text-white group-hover:text-accent-500 transition-colors">Holiday Calendar</h3>
+                        <div class="w-10 h-10 rounded-full bg-accent-500 bg-opacity-20 flex items-center justify-center group-hover:bg-accent-500 transition-colors">
+                            <i class="fas fa-calendar-alt text-accent-500 group-hover:text-white transition-colors"></i>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 mb-6 text-sm md:text-base">View upcoming holidays and plan your leaves.</p>
+                    <a href="{% url 'holiday_calendar' %}" class="inline-flex items-center text-accent-500 hover:text-accent-400 transition-colors group-hover:translate-x-1 transform transition-transform duration-200 font-medium">
+                        <span>View Holidays</span>
+                        <i class="fas fa-arrow-right ml-2 transition-transform group-hover:translate-x-1"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Leave Management -->
+            <div class="bg-dark-800 rounded-xl shadow-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:translate-y-[-4px] border border-dark-700 group">
+                <div class="p-5 md:p-6"> 
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-semibold text-white group-hover:text-accent-500 transition-colors">Leave Management</h3>
+                        <div class="w-10 h-10 rounded-full bg-accent-500 bg-opacity-20 flex items-center justify-center group-hover:bg-accent-500 transition-colors">
+                            <i class="fas fa-calendar-check text-accent-500 group-hover:text-white transition-colors"></i>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 mb-6 text-sm md:text-base">Apply for leave, check approval status, and manage your leave history.</p>
+                    <a href="{% url 'leave' %}" class="inline-flex items-center text-accent-500 hover:text-accent-400 transition-colors group-hover:translate-x-1 transform transition-transform duration-200 font-medium">
+                        <span>Manage Leaves</span>
+                        <i class="fas fa-arrow-right ml-2 transition-transform group-hover:translate-x-1"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Resignation -->
+            <div class="bg-dark-800 rounded-xl shadow-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:translate-y-[-4px] border border-dark-700 group">
+                <div class="p-5 md:p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-semibold text-white group-hover:text-accent-500 transition-colors">Resignation</h3>
+                        <div class="w-10 h-10 rounded-full bg-accent-500 bg-opacity-20 flex items-center justify-center group-hover:bg-accent-500 transition-colors">
+                            <i class="fas fa-sign-out-alt text-accent-500 group-hover:text-white transition-colors"></i>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 mb-6 text-sm md:text-base">Submit your resignation and track approval status.</p>
+                    <a href="{% url 'resignation' %}" class="inline-flex items-center text-accent-500 hover:text-accent-400 transition-colors group-hover:translate-x-1 transform transition-transform duration-200 font-medium">
+                        <span>Submit Resignation</span>
+                        <i class="fas fa-arrow-right ml-2 transition-transform group-hover:translate-x-1"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Reimbursement -->
+            <div class="bg-dark-800 rounded-xl shadow-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:translate-y-[-4px] border border-dark-700 group">
+                <div class="p-5 md:p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-semibold text-white group-hover:text-accent-500 transition-colors">Reimbursement</h3>
+                        <div class="w-10 h-10 rounded-full bg-accent-500 bg-opacity-20 flex items-center justify-center group-hover:bg-accent-500 transition-colors">
+                            <i class="fas fa-wallet text-accent-500 group-hover:text-white transition-colors"></i>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 mb-6 text-sm md:text-base">View submitted reimbursement requests and their statuses.</p>
+                    <a href="{% url 'reimbursement' %}" class="inline-flex items-center text-accent-500 hover:text-accent-400 transition-colors group-hover:translate-x-1 transform transition-transform duration-200 font-medium">
+                        <span>Go to Reimbursements</span>
+                        <i class="fas fa-arrow-right ml-2 transition-transform group-hover:translate-x-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
 
         {% if request.user.username == "Finance" %}
         <!-- Finance -->
         <div class="mb-8">
-            <h2 class="text-2xl font-bold text-white mb-6">Finance Module</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    
-                    <!-- Salary Management -->
-                    <div class="bg-neutral-800 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 border border-neutral-700">
-                        <div class="p-6">
-                            <div class="flex items-center justify-between mb-4">
-                                <h3 class="text-xl font-semibold text-white">Salary Management</h3>
-                                <div class="w-10 h-10 rounded-full bg-red-900/30 flex items-center justify-center">
-                                    <i class="fas fa-dollar-sign text-red-500"></i>
-                                </div>
+            <div class="flex items-center mb-6">
+                <div class="w-1 h-6 bg-accent-500 rounded-full mr-3"></div>
+                <h2 class="text-2xl font-bold text-white">Finance Module</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                <!-- Salary Management -->
+                <div class="bg-dark-800 rounded-xl shadow-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:translate-y-[-4px] border border-dark-700 group">
+                    <div class="p-5 md:p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xl font-semibold text-white group-hover:text-accent-500 transition-colors">Salary Management</h3>
+                            <div class="w-10 h-10 rounded-full bg-accent-500 bg-opacity-20 flex items-center justify-center group-hover:bg-accent-500 transition-colors">
+                                <i class="fas fa-dollar-sign text-accent-500 group-hover:text-white transition-colors"></i>
                             </div>
-                            <p class="text-neutral-400 mb-6">Manage employee salary records and payments.</p>
-                            <a href="{% url 'finance' %}" class="inline-flex items-center text-red-500 hover:text-red-400 transition-colors">
-                                <span>View Salaries</span>
-                                <i class="fas fa-arrow-right ml-2"></i>
-                            </a>
                         </div>
+                        <p class="text-gray-400 mb-6 text-sm md:text-base">Manage employee salary records and payments.</p>
+                        <a href="{% url 'finance' %}" class="inline-flex items-center text-accent-500 hover:text-accent-400 transition-colors group-hover:translate-x-1 transform transition-transform duration-200 font-medium">
+                            <span>View Salaries</span>
+                            <i class="fas fa-arrow-right ml-2 transition-transform group-hover:translate-x-1"></i>
+                        </a>
                     </div>
-
-
-
-
-
                 </div>
             </div>
-        {%endif%}
+        </div>
+        {% endif %}
         
         {% if request.user.role == "HR" %}
         <!-- HR Section -->
         <div class="mb-8">
-            <h2 class="text-2xl font-bold text-white mb-6">HR Administration</h2>
+            <div class="flex items-center mb-6">
+                <div class="w-1 h-6 bg-accent-500 rounded-full mr-3"></div>
+                <h2 class="text-2xl font-bold text-white">HR Administration</h2>
+            </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <!-- Manage User Roles Card -->
-                <div class="bg-neutral-800 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 border border-neutral-700">
-                    <div class="p-6">
+                <div class="bg-dark-800 rounded-xl shadow-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:translate-y-[-4px] border border-dark-700 group">
+                    <div class="p-5 md:p-6">
                         <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-xl font-semibold text-white">Manage User Roles</h3>
-                            <div class="w-10 h-10 rounded-full bg-red-900/30 flex items-center justify-center">
-                                <i class="fas fa-users-cog text-red-500"></i>
+                            <h3 class="text-xl font-semibold text-white group-hover:text-accent-500 transition-colors">Manage User Roles</h3>
+                            <div class="w-10 h-10 rounded-full bg-accent-500 bg-opacity-20 flex items-center justify-center group-hover:bg-accent-500 transition-colors">
+                                <i class="fas fa-users-cog text-accent-500 group-hover:text-white transition-colors"></i>
                             </div>
                         </div>
-                        <p class="text-neutral-400 mb-6">Update roles and permissions for team members.</p>
-                        <a href="{% url 'update_user_role' %}" class="inline-flex items-center text-red-500 hover:text-red-400 transition-colors">
+                        <p class="text-gray-400 mb-6 text-sm md:text-base">Update roles and permissions for team members.</p>
+                        <a href="{% url 'update_user_role' %}" class="inline-flex items-center text-accent-500 hover:text-accent-400 transition-colors group-hover:translate-x-1 transform transition-transform duration-200 font-medium">
                             <span>Manage Roles</span>
-                            <i class="fas fa-arrow-right ml-2"></i>
+                            <i class="fas fa-arrow-right ml-2 transition-transform group-hover:translate-x-1"></i>
                         </a>
                     </div>
                 </div>
                 
                 <!-- Export Users Card -->
-                <div class="bg-neutral-800 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 border border-neutral-700">
-                    <div class="p-6">
+                <div class="bg-dark-800 rounded-xl shadow-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:translate-y-[-4px] border border-dark-700 group">
+                    <div class="p-5 md:p-6">
                         <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-xl font-semibold text-white">Export User Data</h3>
-                            <div class="w-10 h-10 rounded-full bg-red-900/30 flex items-center justify-center">
-                                <i class="fas fa-file-export text-red-500"></i>
+                            <h3 class="text-xl font-semibold text-white group-hover:text-accent-500 transition-colors">Export User Data</h3>
+                            <div class="w-10 h-10 rounded-full bg-accent-500 bg-opacity-20 flex items-center justify-center group-hover:bg-accent-500 transition-colors">
+                                <i class="fas fa-file-export text-accent-500 group-hover:text-white transition-colors"></i>
                             </div>
                         </div>
-                        <p class="text-neutral-400 mb-6">Download user data in CSV format for reporting.</p>
-                        <a href="#" class="inline-flex items-center text-red-500 hover:text-red-400 transition-colors">
+                        <p class="text-gray-400 mb-6 text-sm md:text-base">Download user data in CSV format for reporting.</p>
+                        <a href="{% url 'user_list' %}" class="inline-flex items-center text-accent-500 hover:text-accent-400 transition-colors group-hover:translate-x-1 transform transition-transform duration-200 font-medium">
                             <span>Export Users</span>
-                            <i class="fas fa-arrow-right ml-2"></i>
+                            <i class="fas fa-arrow-right ml-2 transition-transform group-hover:translate-x-1"></i>
                         </a>
                     </div>
                 </div>
-
             </div>
         </div>
         {% endif %}
         
         <!-- Footer -->
-        <footer class="mt-auto pt-6 text-center text-neutral-500 text-sm">
+        <footer class="mt-auto pt-6 text-center text-gray-500 text-sm bg-dark-800 p-4 rounded-xl shadow-md border border-dark-700">
             <p>© 2025 ERP Dashboard. All rights reserved to Aryam.</p>
         </footer>
     </div>
+
+    <!-- Mobile Menu Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const toggleButton = document.getElementById('mobile-menu-toggle');
+            
+            toggleButton.addEventListener('click', function() {
+                if (sidebar.classList.contains('-translate-x-full')) {
+                    sidebar.classList.remove('-translate-x-full');
+                    sidebar.classList.add('translate-x-0');
+                    toggleButton.innerHTML = '<i class="fas fa-times"></i>';
+                } else {
+                    sidebar.classList.remove('translate-x-0');
+                    sidebar.classList.add('-translate-x-full');
+                    toggleButton.innerHTML = '<i class="fas fa-bars"></i>';
+                }
+            });
+            
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(event) {
+                const isClickInsideSidebar = sidebar.contains(event.target);
+                const isClickInsideToggle = toggleButton.contains(event.target);
+                
+                if (!isClickInsideSidebar && !isClickInsideToggle && window.innerWidth < 768 && sidebar.classList.contains('translate-x-0')) {
+                    sidebar.classList.remove('translate-x-0');
+                    sidebar.classList.add('-translate-x-full');
+                    toggleButton.innerHTML = '<i class="fas fa-bars"></i>';
+                }
+            });
+        });
+    </script>
 </body>
 </html>

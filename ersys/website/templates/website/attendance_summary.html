@@ -8,17 +8,28 @@
 <div class="container mx-auto p-6">
     <h2 class="text-3xl font-bold text-gray-800 mb-6">Employee Attendance</h2>
 
-    <!-- Month Filter Form -->
-    <form method="GET" action="{% url 'attendance' %}" class="mb-6 flex items-center gap-4">
+    <!-- Filters Form -->
+    <form method="GET" action="{% url 'attendance' %}" class="mb-6 flex items-center gap-4 flex-wrap">
+        <!-- Month Filter -->
         <label for="month" class="text-lg font-medium text-gray-700">Select Month:</label>
         <select name="month" id="month" class="border border-gray-300 rounded-md px-3 py-2">
             <option value="">All</option>
             {% for month, name in months %}
-                <option value="{{ month }}" {% if selected_month == month %}selected{% endif %}>
-                    {{ name }}
+                <option value="{{ month }}" {% if selected_month == month %}selected{% endif %}>{{ name }}</option>
+            {% endfor %}
+        </select>
+
+        <!-- User Filter -->
+        <label for="user" class="text-lg font-medium text-gray-700">Select User:</label>
+        <select name="user" id="user" class="border border-gray-300 rounded-md px-3 py-2">
+            <option value="">All</option>
+            {% for u in users %}
+                <option value="{{ u.id }}" {% if selected_user == u.id|stringformat:"s" %}selected{% endif %}>
+                    {{ u.first_name }} {{ u.last_name }}
                 </option>
             {% endfor %}
         </select>
+
         <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Filter</button>
     </form>
 
@@ -26,6 +37,7 @@
         <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
             <thead class="bg-gray-800 text-white">
                 <tr>
+                    <th class="border px-4 py-2">Date</th>
                     <th class="border px-4 py-2">User</th>
                     <th class="border px-4 py-2">First Login</th>
                     <th class="border px-4 py-2">Last Logout</th>
@@ -36,11 +48,18 @@
             <tbody class="text-gray-700">
                 {% for record in attendance_summary %}
                 <tr>
-                    <td class="border px-4 py-2">{{ record.user.first_name }} {{ record.user.last_name }}</td>
-                    <td class="border px-4 py-2">{{ record.first_login|date:"Y-m-d H:i:s" }}</td>
+                    <td class="border px-4 py-2">{{ record.date|date:"Y-m-d" }}</td>
+                    <td class="border px-4 py-2">
+                        {% if record.user %}
+                            {{ record.user.first_name }} {{ record.user.last_name }}
+                        {% else %}
+                            Unknown User
+                        {% endif %}
+                    </td>
+                    <td class="border px-4 py-2">{{ record.first_login|date:"H:i:s" }}</td>
                     <td class="border px-4 py-2">
                         {% if record.last_logout %}
-                            {{ record.last_logout|date:"Y-m-d H:i:s" }}
+                            {{ record.last_logout|date:"H:i:s" }}
                         {% else %}
                             <span class="text-red-600 font-semibold">Currently Logged In</span>
                         {% endif %}
@@ -53,16 +72,20 @@
                         {% endif %}
                     </td>
                     <td class="border px-4 py-2">
-                        {% if record.last_logout %}
-                            <span class="text-green-600 font-semibold">Completed</span>
-                        {% else %}
+                        {% if not record.last_logout %}
                             <span class="text-orange-500 font-semibold">Active</span>
+                        {% elif record.total_hours|floatformat:2 > 8 %}
+                            <span class="text-green-600 font-semibold">Ahead</span>
+                        {% elif record.total_hours|floatformat:2 < 8 %}
+                            <span class="text-yellow-600 font-semibold">Behind</span>
+                        {% else %}
+                            <span class="text-gray-600 font-semibold">Completed</span>
                         {% endif %}
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="5" class="text-center py-4 text-gray-500">No attendance records found.</td>
+                    <td colspan="6" class="text-center py-4 text-gray-500">No attendance records found.</td>
                 </tr>
                 {% endfor %}
             </tbody>

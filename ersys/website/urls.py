@@ -79,6 +79,11 @@ urlpatterns = [
 
 
 
+    path("login/otp/", views.request_otp_view, name="request_otp"),
+    path("login/verify/", views.verify_otp_view, name="verify_otp"),
+
+
+
 
 
 
