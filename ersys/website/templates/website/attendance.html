@@ -1,52 +1,163 @@
 {% extends "website/sidebar.html" %}
 
 {% block title %}
-<title>Employee Attendance</title>
+<title>Employee Attendance Dashboard</title>
 {% endblock %}
 
 {% block content %}
 <div class="container mx-auto p-6">
-    <h2 class="text-3xl font-bold text-gray-800 mb-6">Employee Attendance</h2>
+    <div class="bg-white shadow-lg rounded-lg mb-6">
+        <div class="bg-red-600 text-white p-4 rounded-t-lg flex justify-between items-center">
+            <h2 class="text-2xl font-bold">Employee Attendance Dashboard</h2>
+            <div class="text-sm">
+                <span id="current-date"></span>
+            </div>
+        </div>
 
-    <div class="overflow-x-auto">
-        <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-            <thead class="bg-gray-800 text-white">
-                <tr>
-                    <th class="px-6 py-3 text-left text-sm font-semibold">Employee</th>
-                    <th class="px-6 py-3 text-left text-sm font-semibold">First Login</th>
-                    <th class="px-6 py-3 text-left text-sm font-semibold">Last Logout</th>
-                    <th class="px-6 py-3 text-left text-sm font-semibold">Total Active Time</th>
-                </tr>
-                
-            </thead>
-            <tbody class="text-gray-700">
-                {% for record in attendance_records %}
-                <tr class="border-b">
-                    <td class="px-6 py-4">{{ record.user.first_name }} {{ record.user.last_name }}</td>
-                    <td class="px-6 py-4">{{ record.login_time|date:"Y-m-d H:i:s" }}</td>
-                    <td class="px-6 py-4">
-                        {% if record.logout_time %}
-                            {{ record.logout_time|date:"Y-m-d H:i:s" }}
-                        {% else %}
-                            <span class="text-red-600 font-semibold">Currently Logged In</span>
-                            
-                        {% endif %}
-                    </td>
-                    <td class="px-6 py-4">
-                        {% if record.duration %}
-                            {{ record.duration }}
-                        {% else %}
-                            <span class="text-blue-500 font-semibold">Session Active</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="4" class="text-center py-4 text-gray-500">No attendance records found.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <!-- Filters -->
+        <div class="p-4 bg-gray-50 border-b border-gray-200">
+            <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Employee</label>
+                    <select name="employee" class="w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring focus:ring-red-200">
+                        <option value="">All Employees</option>
+                        {% for user in all_users %}
+                            <option value="{{ user.id }}" {% if selected_user == user.id %}selected{% endif %}>{{ user.first_name }} {{ user.last_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Date From</label>
+                    <input type="date" name="date_from" value="{{ date_from|default:'' }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring focus:ring-red-200">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Date To</label>
+                    <input type="date" name="date_to" value="{{ date_to|default:'' }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring focus:ring-red-200">
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md w-full md:w-auto">Apply</button>
+                    <a href="{% url 'attendance' %}" class="ml-2 bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-50">Reset</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white">
+            <div class="bg-gradient-to-r from-red-50 to-red-100 p-4 rounded-lg border border-red-200">
+                <h3 class="text-lg font-medium text-red-800">Total Hours</h3>
+                <p class="text-2xl font-bold text-red-600">{{ total_hours|default:"0" }}</p>
+            </div>
+            <div class="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+                <h3 class="text-lg font-medium text-blue-800">Active Sessions</h3>
+                <p class="text-2xl font-bold text-blue-600">{{ active_sessions|default:"0" }}</p>
+            </div>
+            <div class="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
+                <h3 class="text-lg font-medium text-green-800">Average Daily Hours</h3>
+                <p class="text-2xl font-bold text-green-600">{{ avg_hours|default:"0" }}</p>
+            </div>
+        </div>
     </div>
+
+    <!-- Attendance Table -->
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead class="bg-red-600 text-white">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-sm font-semibold">Employee</th>
+                        <th class="px-6 py-3 text-left text-sm font-semibold">First Login</th>
+                        <th class="px-6 py-3 text-left text-sm font-semibold">Last Logout</th>
+                        <th class="px-6 py-3 text-left text-sm font-semibold">Total Active Time</th>
+                        <th class="px-6 py-3 text-left text-sm font-semibold">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for record in attendance_records %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="h-8 w-8 rounded-full bg-red-100 flex items-center justify-center text-red-700 font-bold mr-3">
+                                    {{ record.user.first_name|first }}{{ record.user.last_name|first }}
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-900">{{ record.user.first_name }} {{ record.user.last_name }}</div>
+                                    <div class="text-gray-500 text-sm">{{ record.user.email }}</div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td class="px-6 py-4 text-sm text-gray-500">
+                            <div>{{ record.login_time|date:"Y-m-d" }}</div>
+                            <div class="text-xs font-medium text-gray-400">{{ record.login_time|date:"H:i:s" }}</div>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500">
+                            {% if record.logout_time %}
+                                <div>{{ record.logout_time|date:"Y-m-d" }}</div>
+                                <div class="text-xs font-medium text-gray-400">{{ record.logout_time|date:"H:i:s" }}</div>
+                            {% else %}
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Currently Active</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500">
+                            {% if record.duration %}
+                                <span class="font-medium">{{ record.duration }}</span>
+                            {% else %}
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Session Active</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if record.logout_time %}
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Completed</span>
+                            {% else %}
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Active</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-8 text-gray-500">No attendance records found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if attendance_records.has_other_pages %}
+        <div class="bg-gray-50 px-4 py-3 flex justify-between border-t">
+            <div>
+                <p class="text-sm text-gray-700">
+                    Showing <span class="font-medium">{{ attendance_records.start_index }}</span> to
+                    <span class="font-medium">{{ attendance_records.end_index }}</span> of
+                    <span class="font-medium">{{ attendance_records.paginator.count }}</span> results
+                </p>
+            </div>
+            <div>
+                <nav class="inline-flex shadow-sm">
+                    {% if attendance_records.has_previous %}
+                        <a href="?page={{ attendance_records.previous_page_number }}" class="px-3 py-1 border border-gray-300 text-sm rounded-l-md bg-white hover:bg-gray-100">Previous</a>
+                    {% endif %}
+                    {% for num in attendance_records.paginator.page_range %}
+                        {% if attendance_records.number == num %}
+                            <span class="px-3 py-1 border border-gray-300 text-sm bg-red-100 text-red-600">{{ num }}</span>
+                        {% else %}
+                            <a href="?page={{ num }}" class="px-3 py-1 border border-gray-300 text-sm bg-white hover:bg-gray-100">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    {% if attendance_records.has_next %}
+                        <a href="?page={{ attendance_records.next_page_number }}" class="px-3 py-1 border border-gray-300 text-sm rounded-r-md bg-white hover:bg-gray-100">Next</a>
+                    {% endif %}
+                </nav>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+   
 </div>
+
+<!-- JS for current date -->
+<script>
+    document.getElementById('current-date').innerText = new Date().toDateString();
+</script>
 {% endblock %}

@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404
 from django.http import FileResponse, Http404
 from .models import Reimbursement  # adjust the import if model is elsewhere
 import os
+from django.core.paginator import Paginator
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -21,7 +22,7 @@ from django.db.models.functions import TruncDate
 from django.core.mail import send_mail
 from django.conf import settings
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.views.decorators.csrf import csrf_exempt
 import random,redis
 from django.core.cache import cache
@@ -700,24 +701,95 @@ def update_user_role(request):
 
 # Attendance Management
 @receiver(user_logged_in)
-def log_login(sender,request,user, **kwargs):
-    00
+def log_login(sender, request, user, **kwargs):
     Attendance.objects.create(user=user, login_time=now())
 
 @receiver(user_logged_out)
-def log_logout(sender,request,user, **kwargs):
-    attendance = Attendance.objects.filter(user=user,logout_time__isnull=True).first()
+def log_logout(sender, request, user, **kwargs):
+    attendance = Attendance.objects.filter(user=user, logout_time__isnull=True).first()
     if attendance:
-        attendance.logout_time=now() 
+        attendance.logout_time = now()
+        
+        # Calculate duration
+        duration = attendance.logout_time - attendance.login_time
+        hours, remainder = divmod(duration.total_seconds(), 3600)
+        minutes, seconds = divmod(remainder, 60)
+        attendance.duration = f"{int(hours)}h {int(minutes)}m {int(seconds)}s"
+        
         attendance.save()
 
 @login_required
 def get_user_attendance(request):
+    # Get all users for filter dropdown (only if user is HR)
+    all_users = []
     if request.user.role == "HR":
-        attendance_records=Attendance.objects.all()
+        all_users = User.objects.all().order_by('first_name')
+    
+    # Apply filters
+    employee_id = request.GET.get('employee')
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
+    
+    # Base queryset
+    if request.user.role == "HR":
+        attendance_records = Attendance.objects.all()
     else:
-        attendance_records=Attendance.objects.filter(user=request.user)
-    return render(request, 'website/attendance.html', {'attendance_records': attendance_records})
+        attendance_records = Attendance.objects.filter(user=request.user)
+    
+    # Apply filters if provided
+    if employee_id:
+        attendance_records = attendance_records.filter(user_id=employee_id)
+    
+    if date_from:
+        date_from_obj = datetime.strptime(date_from, '%Y-%m-%d')
+        attendance_records = attendance_records.filter(login_time__gte=date_from_obj)
+    
+    if date_to:
+        date_to_obj = datetime.strptime(date_to, '%Y-%m-%d')
+        # Add one day to include the entire day
+        date_to_obj = date_to_obj + timedelta(days=1)
+        attendance_records = attendance_records.filter(login_time__lt=date_to_obj)
+    
+    # Order by the most recent login time
+    attendance_records = attendance_records.order_by('-login_time')
+    
+    # Calculate statistics
+    active_sessions = attendance_records.filter(logout_time__isnull=True).count()
+    
+    # Calculate total hours (from records with duration)
+    total_hours = 0
+    for record in attendance_records.filter(duration__isnull=False):
+        if record.duration:
+            total_seconds = int(record.duration.total_seconds())
+            hours, remainder = divmod(total_seconds, 3600)
+            minutes, _ = divmod(remainder, 60)
+            total_hours += hours + (minutes / 60)
+
+    
+    # Calculate average daily hours
+    total_days = len(set(record.login_time.date() for record in attendance_records))
+    avg_hours = round(total_hours / total_days, 2) if total_days > 0 else 0
+    
+    # Format total hours nicely
+    total_hours = round(total_hours, 2)
+    
+    # Pagination
+    paginator = Paginator(attendance_records, 10)  # Show 10 records per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'attendance_records': page_obj,
+        'all_users': all_users,
+        'selected_user': employee_id,
+        'date_from': date_from,
+        'date_to': date_to,
+        'active_sessions': active_sessions,
+        'total_hours': total_hours,
+        'avg_hours': avg_hours,
+    }
+    
+    return render(request, 'website/attendance.html', context)
 
 # Export Users
 @login_required
