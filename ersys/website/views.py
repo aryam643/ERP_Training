@@ -388,6 +388,7 @@ def login_page(request):
             login(request, user)
             request.session.set_expiry(86400)  # 1 day session
             return redirect("dashboard")  # Change to your homepage
+    messages.error(request, "Check your E-mail, Password")
     return render(request, "website/login.html")
 
 # User Logout
@@ -590,12 +591,34 @@ def update_account(request):
 @login_required
 def update_user_role(request):
     if request.user.role != "HR":
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'success': False, 'message': 'You are not authorized to update a user role'})
         messages.error(request, "You are not authorized to update a user role")
         return redirect('dashboard')
 
     if request.method == 'POST':
-        print("Received POST request:", request.POST)  # Debugging
-
+        # Handle AJAX requests
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            try:
+                data = json.loads(request.body)
+                user_id = data.get('user_id')
+                new_role = data.get('role')
+                
+                if not user_id or not new_role:
+                    return JsonResponse({'success': False, 'message': 'Invalid request'})
+                
+                user = get_object_or_404(User, id=user_id)
+                user.role = new_role
+                user.save()
+                
+                return JsonResponse({
+                    'success': True, 
+                    'message': f"Updated role for {user.first_name} {user.last_name} to {new_role}."
+                })
+            except Exception as e:
+                return JsonResponse({'success': False, 'message': str(e)})
+        
+        # Handle traditional form submissions (fallback)
         user_id = request.POST.get('user_id')
         new_role = request.POST.get('role')
 
@@ -605,17 +628,75 @@ def update_user_role(request):
 
         user = get_object_or_404(User, id=user_id)
         user.role = new_role
-        print("Updating user ID:", user_id) 
-        print("New Role:", new_role)
-  
         user.save()
 
         messages.success(request, f"Updated role for {user.first_name} {user.last_name} to {new_role}.")
         return redirect('update_user_role')
 
+    # Handle search and filter
+    search_query = request.GET.get('search', '')
+    role_filter = request.GET.get('role', 'all')
+
     users = User.objects.exclude(Q(role="HR") | Q(role="Admin"))
 
-    return render(request, 'website/update_user_role.html', {'users': users})
+    if search_query:
+        users = users.filter(
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(email__icontains=search_query)
+        )
+
+    if role_filter != 'all':
+        users = users.filter(role__iexact=role_filter)
+
+    # Handle AJAX search requests
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest' and request.method == 'GET':
+        users_data = []
+        for user in users:
+            users_data.append({
+                'id': user.id,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email,
+                'role': user.role,
+                'initials': user.first_name[0] + user.last_name[0] if user.first_name and user.last_name else ''
+            })
+        return JsonResponse({'users': users_data})
+
+    context = {
+        'users': users,
+        'search_query': search_query,
+        'role_filter': role_filter,
+    }
+    return render(request, 'website/update_user_role.html', context)
+# def update_user_role(request):
+#     if request.user.role != "HR":
+#         messages.error(request, "You are not authorized to update a user role")
+#         return redirect('dashboard')
+
+#     if request.method == 'POST':
+#         print("Received POST request:", request.POST)  # Debugging
+
+#         user_id = request.POST.get('user_id')
+#         new_role = request.POST.get('role')
+
+#         if not user_id or not new_role:
+#             messages.error(request, "Invalid request")
+#             return redirect('update_user_role')
+
+#         user = get_object_or_404(User, id=user_id)
+#         user.role = new_role
+#         print("Updating user ID:", user_id) 
+#         print("New Role:", new_role)
+  
+#         user.save()
+
+#         messages.success(request, f"Updated role for {user.first_name} {user.last_name} to {new_role}.")
+#         return redirect('update_user_role')
+
+#     users = User.objects.exclude(Q(role="HR") | Q(role="Admin"))
+
+#     return render(request, 'website/update_user_role.html', {'users': users})
 
 # Attendance Management
 @receiver(user_logged_in)
