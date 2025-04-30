@@ -10,6 +10,8 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     path('login/', views.login_page, name='login'),
     path('logout/', views.user_logout, name='logout'),
+    path("login/otp/", views.request_otp_view, name="request_otp"),
+    path("login/verify/", views.verify_otp_view, name="verify_otp"),
 
     # Project Management
     path('projects/', views.project_list, name='project_list'),
@@ -77,10 +79,13 @@ urlpatterns = [
     path("hr/reject/<int:reimbursement_id>/", views.reject_reimbursement, name="reject_reimbursement"),
     path('view-bill/<int:reimbursement_id>/', views.view_bill_file, name='view_bill'),
 
+    #assume user
+
+    path('assume-user/', views.assume_user, name='assume_user'),
+    path('return-to-admin/', views.return_to_admin, name='return_to_admin'),
 
 
-    path("login/otp/", views.request_otp_view, name="request_otp"),
-    path("login/verify/", views.verify_otp_view, name="verify_otp"),
+
 
 
 

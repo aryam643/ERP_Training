@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 from django.http import FileResponse, Http404
-from .models import Reimbursement  # adjust the import if model is elsewhere
+from .models import *  
 import os
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect, get_object_or_404
@@ -10,6 +10,7 @@ from .models import *
 from .forms import *
 from django.http import JsonResponse
 from django.contrib.auth import login,authenticate,logout,get_backends
+from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Q
 from django.contrib.auth.signals import user_logged_in, user_logged_out
 from django.dispatch import receiver
@@ -22,6 +23,7 @@ from django.db.models.functions import TruncDate
 from django.core.mail import send_mail
 from django.conf import settings
 import requests
+from django.urls import reverse
 from datetime import datetime, timedelta
 from django.views.decorators.csrf import csrf_exempt
 import random,redis
@@ -29,6 +31,59 @@ from django.core.cache import cache
 
 redis_client = redis.Redis(host='localhost', port=6379, db=0)
 
+
+@login_required
+def assume_user(request):
+    # Only superusers can access this function
+    if not request.user.is_superuser:
+        messages.error(request, "You don't have permission to perform this action.")
+        return redirect('dashboard')
+    
+    if request.method == "POST":
+        user_id = request.POST.get("user_id")
+        user = get_object_or_404(User, id=user_id)
+        
+        # Store the original admin ID BEFORE login
+        admin_id = request.user.id
+        
+        # Login as the selected user
+        user.backend = 'django.contrib.auth.backends.ModelBackend'
+        login(request, user)
+        
+        # Set session variables AFTER login to avoid reset
+        request.session['original_admin_id'] = admin_id
+        request.session.modified = True  # Ensure the session is saved
+        
+        messages.success(request, f"You are now browsing as {user.username}")
+        return redirect('dashboard')
+    
+    return redirect('dashboard')
+
+@login_required
+def return_to_admin(request):
+    # Check if there is an original admin ID in the session
+    if 'original_admin_id' not in request.session:
+        messages.error(request, "No admin session found.")
+        return redirect('dashboard')
+    
+    # Get the original admin user
+    admin_id = request.session['original_admin_id']
+    admin_user = get_object_or_404(User, id=admin_id)
+    
+    # Check if the admin user is still a superuser
+    if not admin_user.is_superuser:
+        messages.error(request, "Original admin account no longer has superuser privileges.")
+        return redirect('dashboard')
+    
+    # Remove the original admin ID from the session
+    del request.session['original_admin_id']
+    
+    # Login as the admin user
+    admin_user.backend = 'django.contrib.auth.backends.ModelBackend'
+    login(request, admin_user)
+    
+    messages.success(request, f"Returned to admin account: {admin_user.username}")
+    return redirect('dashboard')
 
 
 def request_otp_view(request):
@@ -389,7 +444,10 @@ def login_page(request):
             login(request, user)
             request.session.set_expiry(86400)  # 1 day session
             return redirect("dashboard")  # Change to your homepage
-    messages.error(request, "Check your E-mail, Password")
+        else:
+            messages.error(request, "Try Again!! Check your E-mail, Password")
+            return render(request, "website/login.html")
+
     return render(request, "website/login.html")
 
 # User Logout
@@ -409,7 +467,12 @@ def user_logout(request):
 
 # Dashboard
 def dashboard(request):
-    return render(request, 'website/dashboard.html')
+    context = {}
+    
+    if request.user.is_superuser:
+        context['users'] = User.objects.exclude(id=request.user.id)
+    
+    return render(request, 'website/dashboard.html', context)
 
 # Add a Project (Only Managers)
 @login_required

@@ -49,9 +49,85 @@
             <i class="fas fa-chart-line text-2xl text-accent-500 mr-3"></i>
             <h1 class="text-2xl font-bold">ERP Dashboard</h1>
         </div>
-        
+
+        <!-- User Impersonation Section - REDESIGNED -->
+        {% if request.user.is_superuser %}
+        <div class="p-4 mb-4">
+            <div class="bg-gradient-to-r from-dark-800 to-dark-700 rounded-xl border border-dark-600 overflow-hidden shadow-lg">
+                <div class="px-5 py-4 border-b border-dark-600 bg-dark-800/50">
+                    <div class="flex items-center">
+                        <div class="bg-accent-500/20 p-2 rounded-lg mr-3">
+                            <i class="fas fa-user-secret text-accent-500"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold">Admin Controls</h3>
+                    </div>
+                </div>
+                
+                <div class="p-5">
+                    <form id="assume-user-form" method="post" action="{% url 'assume_user' %}" class="space-y-4">
+                        {% csrf_token %}
+                        <div class="space-y-2">
+                            <label for="user-select" class="text-sm font-medium text-gray-300 flex items-center">
+                                <i class="fas fa-mask text-xs mr-2 text-accent-500/70"></i>
+                                Impersonate User
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <i class="fas fa-users text-gray-500"></i>
+                                </div>
+                                <select id="user-select" name="user_id" class="pl-10 pr-4 py-2.5 bg-dark-900/80 border border-dark-600 rounded-lg w-full text-white focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition duration-200 appearance-none">
+                                    <option value="" disabled selected>Select a user...</option>
+                                    {% for user in users %}
+                                        <option value="{{ user.id }}">{{ user.username }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                    <i class="fas fa-chevron-down text-gray-500 text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="w-full flex items-center justify-center px-4 py-2.5 bg-gradient-to-r from-accent-600 to-accent-700 hover:from-accent-500 hover:to-accent-600 text-white rounded-lg transition duration-300 shadow-lg group">
+                            <i class="fas fa-mask mr-2 group-hover:animate-pulse"></i>
+                            <span class="font-medium">Impersonate User</span>
+                        </button>
+                        
+                        <p class="text-xs text-gray-400 italic flex items-start mt-2">
+                            <i class="fas fa-info-circle mr-1.5 mt-0.5 text-accent-500/70"></i>
+                            <span>View the system as another user without affecting their account.</span>
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% elif request.session.original_admin_id %}
+        <div class="p-4 mb-4">
+            <div class="bg-gradient-to-r from-blue-900/30 to-indigo-900/30 rounded-xl border border-blue-700/30 overflow-hidden shadow-lg">
+                <div class="px-5 py-4 ">
+                    <div class="flex items-center">
+                        <div class="bg-blue-500 rounded-full p-1.5 mr-3 shadow-lg">
+                            <i class="fas fa-user-shield text-dark-900 text-sm"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium text-blue-300">Impersonation Active</p>
+                            <p class="text-sm text-blue-300/70">Viewing as <span class="font-semibold text-white">{{ request.user.username }}</span></p>
+                        </div>
+                    </div>
+                    
+                    <form method="post" action="{% url 'return_to_admin' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="flex items-center justify-center px-4 py-2  mt-5 bg-gradient-to-r from-blue-700 to-blue-800 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg transition duration-300 shadow-lg hover:shadow-xl group">
+                            <i class="fas fa-sign-out-alt mr-2 group-hover:-translate-x-1 transition-transform"></i>
+                            <span class="font-medium">Return to Admin</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
         <!-- Navigation Menu -->
-        <div class="p-4 flex-grow overflow-y-auto scrollbar-thin">
+        <div class="p-4 flex-grow overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <nav class="space-y-1">
                 <a href="{% url 'attendance' %}" class="group flex items-center px-4 py-3 text-base rounded-lg hover:bg-dark-800 transition-all duration-200 hover:translate-x-1">
                     <i class="fas fa-calendar-check mr-3 text-gray-400 group-hover:text-accent-500 transition-colors"></i>
@@ -431,16 +507,16 @@
         });
 
         function updateDateTime() {
-        const now = new Date();
-        const options = {
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-        hour: 'numeric', minute: 'numeric', second: 'numeric',
-        hour12: true
-        };
-        document.getElementById('datetime').innerText = now.toLocaleString('en-US', options);
-    }
-    setInterval(updateDateTime, 1000);  // Update every second
-    updateDateTime();  // Initial call
+            const now = new Date();
+            const options = {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+                hour: 'numeric', minute: 'numeric', second: 'numeric',
+                hour12: true
+            };
+            document.getElementById('datetime').innerText = now.toLocaleString('en-US', options);
+        }
+        setInterval(updateDateTime, 1000);  // Update every second
+        updateDateTime();  // Initial call
     </script>
 </body>
 </html>
