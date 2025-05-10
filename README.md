@@ -56,7 +56,7 @@ This project focuses on optimizing an in-house **ERP system (XLPlat)** by transi
 ---
 
 ## **PPT & Video**  
-[PPT]([https://github.com/aryam643/ERP_Training/blob/PPT_Video/G24C.pptx](https://docs.google.com/presentation/d/1Lj0vs5COkYm-PBdJinS47WypM87rhfTc/edit?usp=sharing&ouid=107394431664678613446&rtpof=true&sd=true))
+[PPT]([https://github.com/aryam643/ERP_Training/blob/PPT_Video/G24C.pptx])
 
 
 [Click here to watch the project demo](https://drive.google.com/file/d/1q1SPIwkiD1demq1jBRqfcxm3ilCAMiNu/view?usp=sharing)  
