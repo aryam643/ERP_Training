@@ -12,7 +12,6 @@ This project focuses on optimizing an in-house **ERP system (XLPlat)** by transi
 - **Resignation Workflow**: Automating approval processes for resignations.  
 - **Email Integration**: Sending and receiving emails directly through ERP.  
 - **Calendar & Events**: Managing meetings, deadlines, and holidays.  
-- **Resume Parser**: Extracting relevant information from resumes for HR processing.  
 - **Bill Reimbursement**: Automating the approval and tracking of expense claims.  
 
 ---
@@ -32,21 +31,21 @@ This project focuses on optimizing an in-house **ERP system (XLPlat)** by transi
    ```
 2. Set up a virtual environment and install dependencies:  
    ```sh
-   python -m venv venv
+   python3 -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    pip install -r requirements.txt
    ```
 3. Apply database migrations:  
    ```sh
-   python manage.py migrate
+   python3 manage.py migrate
    ```
 4. Create a superuser:  
    ```sh
-   python manage.py createsuperuser
+   python3 manage.py createsuperuser
    ```
 5. Run the development server:  
    ```sh
-   python manage.py runserver
+   python3 manage.py runserver
    ```
 6. Access the ERP system at:  
    ```
@@ -59,7 +58,7 @@ This project focuses on optimizing an in-house **ERP system (XLPlat)** by transi
 [PPT](https://github.com/aryam643/ERP_Training/blob/PPT_Video/G24C.pptx)
 
 
-[Click here to watch the project demo](https://drive.google.com/file/d/1q1SPIwkiD1demq1jBRqfcxm3ilCAMiNu/view?usp=sharing)  
+[Click here to watch the project demo](https://drive.google.com/file/d/1OOB85Gk67C446L0-yJGIC5mahLjGlxKv/view?usp=sharing)  
 
 ---
 
