@@ -85,7 +85,6 @@ def return_to_admin(request):
     messages.success(request, f"Returned to admin account: {admin_user.username}")
     return redirect('dashboard')
 
-
 def request_otp_view(request):
     if request.method == "POST":
         email = request.POST.get("email")
